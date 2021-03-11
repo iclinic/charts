@@ -3,7 +3,7 @@ entries:
   outline:
   - apiVersion: v2
     appVersion: 0.53.1
-    created: "2021-03-11T15:44:45.43276674-03:00"
+    created: "2021-03-11T15:47:38.909219209-03:00"
     dependencies:
     - name: redis
       repository: https://charts.bitnami.com/bitnami
@@ -20,6 +20,6 @@ entries:
     - https://github.com/iclinic/outline-helm
     type: application
     urls:
-    - https://iclinic.github.com/outline-helm/outline-0.1.0.tgz
+    - https://iclinic.github.io/outline-helm/outline-0.1.0.tgz
     version: 0.1.0
-generated: "2021-03-11T15:44:45.428200866-03:00"
+generated: "2021-03-11T15:47:38.90522185-03:00"
