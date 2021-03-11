@@ -1,0 +1,117 @@
+replicaCount: 1
+
+image:
+  repository: outlinewiki/outline
+  pullPolicy: IfNotPresent
+  tag: "version-0.53.1"             # Overrides the image tag whose default is the chart appVersion.
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+outline:
+  auth:
+    google:
+      allowedDomains:
+        - example.com
+        - example.net
+      clientId: ""
+      clientSecret: ""
+    slack:
+      key: ""
+      secret: ""
+  aws:
+    accessKey: ""
+    secret: ""
+    s3:
+      acl: private    # Set to public-read to allow public access
+      bucket: ""
+      endpoint: ""
+      maxSize: 26214400
+      region: ""
+  containerPort: 3000
+  debug: "sql,cache,presenters,events,logistics,emails,mailer"
+  enableUpdates: true
+  externalUrl: "https://foobar.com/outline"
+  forceHttps: false
+  googleAnalyticsId: ""
+  notifications:
+    slack:
+      appId: ""
+      messageActions: true
+      verificationToken: ""
+  postgresqlUrl: ""   # This is mandatory only if embedded postgresql is disabled
+  redisUrl: ""        # This is mandatory only if embedded redis is disabled
+  secrets:
+    key: foobar
+    utils: foobar
+  sentryDsn: ""
+  smtp:
+    fromEmail: ""
+    host: ""
+    password: ""
+    port: ""
+    replyEmail: ""
+    user: ""
+  teamLogo: ""
+  websocketsEnabled: true
+  pgSslMode: ""
+
+postgresql:
+  enabled: true
+  imageTag: latest
+  password: zuyUTYsoFf
+  postgresqlUsername: outline
+  postgresqlPassword: zuyUTYsoFf
+  postgresqlDatabase: outline
+  port: 5432
+
+redis:
+  enabled: true
+  imageTag: latest
+  port: 6379
+  usePassword: false
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+
+securityContext: {}
+
+service:
+  type: NodePort
+  port: 3000
+
+ingress:
+  enabled: false
+  annotations: {}
+  hosts:
+    - host: outline.example.com
+      paths: []
+  tls: []
+
+resources:
+  # limits:
+  #   cpu: 1400m
+  #   memory: 1512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 4
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
