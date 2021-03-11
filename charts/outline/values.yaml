@@ -57,15 +57,6 @@ outline:
   websocketsEnabled: true
   pgSslMode: ""
 
-postgresql:
-  enabled: true
-  imageTag: latest
-  password: zuyUTYsoFf
-  postgresqlUsername: outline
-  postgresqlPassword: zuyUTYsoFf
-  postgresqlDatabase: outline
-  port: 5432
-
 redis:
   enabled: true
   imageTag: latest
