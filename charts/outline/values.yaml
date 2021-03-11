@@ -1,13 +1,13 @@
 replicaCount: 1
 
-image:
-  repository: outlinewiki/outline
-  pullPolicy: IfNotPresent
-  tag: "version-0.53.1"             # Overrides the image tag whose default is the chart appVersion.
-
 imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
+
+image:
+  repository: outlinewiki/outline
+  pullPolicy: IfNotPresent
+  tag: "version-0.53.1"
 
 outline:
   auth:
@@ -15,58 +15,27 @@ outline:
       allowedDomains:
         - example.com
         - example.net
-      clientId: ""
-      clientSecret: ""
-    slack:
-      key: ""
-      secret: ""
   aws:
-    accessKey: ""
-    secret: ""
     s3:
-      acl: private    # Set to public-read to allow public access
+      acl: private
       bucket: ""
       endpoint: ""
       maxSize: 26214400
       region: ""
   containerPort: 3000
   debug: "sql,cache,presenters,events,logistics,emails,mailer"
-  enableUpdates: true
-  externalUrl: "https://foobar.com/outline"
+  externalUrl: "https://chart.example"
   forceHttps: false
-  googleAnalyticsId: ""
-  notifications:
-    slack:
-      appId: ""
-      messageActions: true
-      verificationToken: ""
-  postgresqlUrl: ""   # This is mandatory only if embedded postgresql is disabled
-  redisUrl: ""        # This is mandatory only if embedded redis is disabled
-  secrets:
-    key: foobar
-    utils: foobar
-  sentryDsn: ""
-  smtp:
-    fromEmail: ""
-    host: ""
-    password: ""
-    port: ""
-    replyEmail: ""
-    user: ""
   teamLogo: ""
-  websocketsEnabled: true
-  pgSslMode: ""
-
-redis:
-  enabled: true
-  imageTag: latest
-  port: 6379
-  usePassword: false
 
 serviceAccount:
   create: true
-  annotations: {}
-  name: ""
+  name:
+#  annotations:
+#    
+
+redis:
+  usePassword: false
 
 podAnnotations: {}
 
@@ -74,32 +43,88 @@ podSecurityContext: {}
 
 securityContext: {}
 
+## Expose the outline service to be accessed from outside the cluster (LoadBalancer service).
+## or access it from within the cluster (ClusterIP service). Set the service type and the port to serve it.
+## ref: http://kubernetes.io/docs/user-guide/services/
+##
 service:
-  type: NodePort
+  type: ClusterIP
   port: 3000
+  targetPort: 3000
+  annotations: {}
+  labels: {}
+  portName: http
 
 ingress:
   enabled: false
+  # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
+  # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
+  # ingressClassName: nginx
+  # Values can be templated
   annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  labels: {}
+  path: /
+
+  # pathType is only for k8s > 1.19
+  pathType: Prefix
+
   hosts:
-    - host: outline.example.com
-      paths: []
-  tls: []
+    - chart-example.local
+  ## Extra paths to prepend to every host configuration. This is useful when working with annotation based services.
+  extraPaths: []
+  # - path: /*
+  #   backend:
+  #     serviceName: ssl-redirect
+  #     servicePort: use-annotation
+  ## Or for k8s > 1.19
+  # - path: /*
+  #   pathType: Prefix
+  #   backend:
+  #     service:
+  #       name: ssl-redirect
+  #       port:
+  #         name: service
 
-resources:
-  # limits:
-  #   cpu: 1400m
-  #   memory: 1512Mi
-  requests:
-    cpu: 100m
-    memory: 128Mi
+resources: {}
+#  limits:
+#    cpu: 100m
+#    memory: 128Mi
+#  requests:
+#    cpu: 100m
+#    memory: 128Mi
 
+## Create HorizontalPodAutoscaler object.
+##
 autoscaling:
-  enabled: true
-  minReplicas: 1
-  maxReplicas: 4
-  targetCPUUtilizationPercentage: 80
-  targetMemoryUtilizationPercentage: 80
+  enabled: false
+#   minReplicas: 1
+#   maxReplicas: 4
+#   targetCPUUtilizationPercentage: 80
+#   targetMemoryUtilizationPercentage: 80
+
+# Environment variables to be passed to Outline's container
+env: []
+# - name: SOME_VAR
+#   value: some-var-value
+# - name: SOME_VAR_FROM_CONFIG_MAP
+#   valueFrom:
+#     configMapRef:
+#       name: configmap-name
+#       key: config-key
+# - name: SOME_SECRET
+#   valueFrom:
+#     secretKeyRef:
+#       name: secret-name
+#       key: secret-key
+
+envFrom: []
+# - configMapRef:
+#     name: config-map-name
+# - secretRef:
+#     name: secret-map-name
+
 
 nodeSelector: {}
 
