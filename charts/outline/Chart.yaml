@@ -3,18 +3,16 @@ name: outline
 description: A Helm chart for https://github.com/outline/outline
 type: application
 version: 0.1.0
-appVersion: version-0.49.0
+appVersion: 0.53.0
 dependencies:
-  - name: postgresql
-    version: ~8.10.7
-    repository: https://charts.bitnami.com/bitnami
-    condition: postgresql.enabled
   - name: redis
-    version: ~10.7.4
+    version: ~12.8.3
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
 maintainers:
-  - name: Michele Zuccala
-    email: michele@zuccala.com
+  - name: Gabriel Montañola
+    email: gabriel.ricardo@iclinic.com.br
+  - name: Marcio Rodrigues
+    email: marcio.godoy@iclinic.com.br
 sources:
-  - https://github.com/zuc/helm-charts
+  - https://github.com/iclinic/outline-helm
