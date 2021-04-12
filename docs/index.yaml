@@ -1,5 +1,23 @@
 apiVersion: v1
 entries:
+  metabase:
+  - apiVersion: v2
+    appVersion: 0.38.3
+    created: "2021-04-12T15:14:34.81890598-03:00"
+    description: A Helm chart for https://github.com/metabase/metabase
+    digest: 0a3f83ed8a7636a38307225841f682d317f22d2ae63bc1c38a44672ac9d3c705
+    maintainers:
+    - email: gabriel.ricardo@iclinic.com.br
+      name: Gabriel Montañola
+    - email: marcio.godoy@iclinic.com.br
+      name: Marcio Rodrigues
+    name: metabase
+    sources:
+    - https://github.com/iclinic/charts
+    type: application
+    urls:
+    - metabase-0.1.0.tgz
+    version: 0.1.0
   outline:
   - apiVersion: v2
     appVersion: 0.53.1
