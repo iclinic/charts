@@ -14,4 +14,4 @@ maintainers:
   - name: Marcio Rodrigues
     email: marcio.godoy@iclinic.com.br
 sources:
-  - https://github.com/iclinic/outline-helm
+  - https://github.com/iclinic/charts
