@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "drone-autoscaler.fullname" . }}
+  labels:
+    {{- include "drone-autoscaler.labels" . | nindent 4 }}
+data:
+{{- range $envKey, $envVal := .Values.env }}
+  {{ $envKey | upper }}: {{ $envVal | quote }}
+{{- end }}

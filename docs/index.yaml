@@ -1,9 +1,27 @@
 apiVersion: v1
 entries:
+  drone-autoscaler:
+  - apiVersion: v2
+    appVersion: 1.0.2
+    created: "2021-04-22T11:34:29.193178253-03:00"
+    description: A Helm chart for https://github.com/Shuttl-Tech/drone-autoscaler
+    digest: 945d172e85bbf97c542a447ced3e2c452e958e4d8345ca838abba985c8b4a401
+    maintainers:
+    - email: gabriel.ricardo@iclinic.com.br
+      name: Gabriel Montañola
+    - email: marcio.godoy@iclinic.com.br
+      name: Marcio Rodrigues
+    name: drone-autoscaler
+    sources:
+    - https://github.com/iclinic/charts
+    type: application
+    urls:
+    - drone-autoscaler-0.1.0.tgz
+    version: 0.1.0
   metabase:
   - apiVersion: v2
     appVersion: 0.38.3
-    created: "2021-04-12T15:14:34.81890598-03:00"
+    created: "2021-04-22T11:34:29.193773685-03:00"
     description: A Helm chart for https://github.com/metabase/metabase
     digest: 0a3f83ed8a7636a38307225841f682d317f22d2ae63bc1c38a44672ac9d3c705
     maintainers:
@@ -21,7 +39,7 @@ entries:
   outline:
   - apiVersion: v2
     appVersion: 0.53.1
-    created: "2021-04-12T14:14:00.877210109-03:00"
+    created: "2021-04-22T11:34:29.198300986-03:00"
     dependencies:
     - name: redis
       repository: https://charts.bitnami.com/bitnami
@@ -40,4 +58,4 @@ entries:
     urls:
     - outline-0.1.0.tgz
     version: 0.1.0
-generated: "2021-04-12T14:14:00.870162973-03:00"
+generated: "2021-04-22T11:34:29.192725993-03:00"
