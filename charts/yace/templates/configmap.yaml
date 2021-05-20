@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "yace.fullname" . }}-config
+  labels:
+    {{- include "yace.labels" . | nindent 4 }}
+data:
+  config.yml: |
+{{ .Values.yace.config | toYaml | indent 4 }}
