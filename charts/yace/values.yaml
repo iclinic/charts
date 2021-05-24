@@ -103,3 +103,7 @@ envFrom: []
 #     name: config-map-name
 # - secretRef:
 #     name: secret-map-name
+
+extraArgs: []
+# extraArgs:
+#   - --scraping-interval=60
