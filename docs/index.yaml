@@ -3,7 +3,7 @@ entries:
   drone-autoscaler:
   - apiVersion: v2
     appVersion: 1.0.2
-    created: "2021-05-24T14:35:33.811068262-03:00"
+    created: "2021-05-24T17:13:56.68318227-03:00"
     description: A Helm chart for https://github.com/Shuttl-Tech/drone-autoscaler
     digest: 945d172e85bbf97c542a447ced3e2c452e958e4d8345ca838abba985c8b4a401
     maintainers:
@@ -21,7 +21,7 @@ entries:
   metabase:
   - apiVersion: v2
     appVersion: 0.38.3
-    created: "2021-05-24T14:35:33.817010508-03:00"
+    created: "2021-05-24T17:13:56.683817011-03:00"
     description: A Helm chart for https://github.com/metabase/metabase
     digest: 0a3f83ed8a7636a38307225841f682d317f22d2ae63bc1c38a44672ac9d3c705
     maintainers:
@@ -39,7 +39,7 @@ entries:
   outline:
   - apiVersion: v2
     appVersion: 0.53.1
-    created: "2021-05-24T14:35:33.836864145-03:00"
+    created: "2021-05-24T17:13:56.688275516-03:00"
     dependencies:
     - name: redis
       repository: https://charts.bitnami.com/bitnami
@@ -61,7 +61,24 @@ entries:
   yace:
   - apiVersion: v2
     appVersion: v0.27.0-alpha
-    created: "2021-05-24T14:35:33.843427463-03:00"
+    created: "2021-05-24T17:13:56.690749037-03:00"
+    description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
+    digest: 1d62d973b329bacfe86b395e15ccb693733264d7ce8dbe3453be891f78286e9f
+    maintainers:
+    - email: gabriel.ricardo@iclinic.com.br
+      name: Gabriel Montañola
+    - email: marcio.godoy@iclinic.com.br
+      name: Marcio Rodrigues
+    name: yace
+    sources:
+    - https://github.com/iclinic/charts
+    type: application
+    urls:
+    - yace-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: v0.27.0-alpha
+    created: "2021-05-24T17:13:56.689863865-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: 677df46e46e70d9fab0166e04d6edc81849990288aab8218eeb9d1208790721f
     maintainers:
@@ -78,7 +95,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 1.0.2
-    created: "2021-05-24T14:35:33.840563257-03:00"
+    created: "2021-05-24T17:13:56.688837966-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: 66a384ed76d9e8fbda5cdd100fc9e4db60d55e856ab461e507d167b114b6e56c
     maintainers:
@@ -93,4 +110,4 @@ entries:
     urls:
     - yace-0.1.0.tgz
     version: 0.1.0
-generated: "2021-05-24T14:35:33.810557661-03:00"
+generated: "2021-05-24T17:13:56.68264599-03:00"
