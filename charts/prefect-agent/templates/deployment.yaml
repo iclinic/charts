@@ -48,6 +48,8 @@ spec:
               value: {{ .Values.agent.backend }}
             - name: PREFECT__CLOUD__AGENT__AGENT_ADDRESS
               value: 'http://:8080'
+            - name: SERVICE_ACCOUNT_NAME
+              value: {{ include "prefect-agent.serviceAccountName" . }}
           envFrom:
             - secretRef:
                 name: {{ .Values.agent.secretName }}
