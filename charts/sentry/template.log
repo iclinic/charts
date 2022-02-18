@@ -1,0 +1,4422 @@
+---
+# Source: sentry/charts/rabbitmq/templates/pdb.yaml
+apiVersion: policy/v1beta1
+kind: PodDisruptionBudget
+metadata:
+  name: RELEASE-NAME-rabbitmq
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    helm.sh/chart: rabbitmq-8.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels: 
+      app.kubernetes.io/name: rabbitmq
+      app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: sentry/charts/kafka/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: RELEASE-NAME-kafka
+  labels:
+    app.kubernetes.io/name: kafka
+    helm.sh/chart: kafka-12.0.0
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: kafka
+---
+# Source: sentry/charts/rabbitmq/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: RELEASE-NAME-rabbitmq
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    helm.sh/chart: rabbitmq-8.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+secrets:
+  - name: RELEASE-NAME-rabbitmq
+---
+# Source: sentry/charts/redis/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+automountServiceAccountToken: true
+metadata:
+  name: RELEASE-NAME-sentry-redis
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: sentry-redis
+    helm.sh/chart: redis-15.3.2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: sentry/charts/postgresql/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: RELEASE-NAME-sentry-postgresql
+  labels:
+    app.kubernetes.io/name: sentry-postgresql
+    helm.sh/chart: postgresql-10.2.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+data:
+  postgresql-postgres-password: "d3c3MVkzUk1RaQ=="
+  postgresql-password: "TkxnNWJ6YzVWRw=="
+---
+# Source: sentry/charts/rabbitmq/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: RELEASE-NAME-rabbitmq
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    helm.sh/chart: rabbitmq-8.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+data:
+  rabbitmq-password: "Z3Vlc3Q="
+  rabbitmq-erlang-cookie: "cEhncHkzUTZhZFRza3pBVDZiTEhDRnFGVEY3bE14aEE="
+---
+# Source: sentry/charts/rabbitmq/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: load-definition
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    helm.sh/chart: rabbitmq-8.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+stringData:
+  load_definition.json: |
+    {
+      "users": [
+        {
+          "name": "guest",
+          "password": "guest",
+          "tags": "administrator"
+        }
+      ],
+      "permissions": [{
+        "user": "guest",
+        "vhost": "/",
+        "configure": ".*",
+        "write": ".*",
+        "read": ".*"
+      }],
+      "policies": [
+        {
+          "name": "ha-all",
+          "pattern": ".*",
+          "vhost": "/",
+          "definition": {
+            "ha-mode": "all",
+            "ha-sync-mode": "automatic",
+            "ha-sync-batch-size": 1
+          }
+        }
+      ],
+      "vhosts": [
+        {
+          "name": "/"
+        }
+      ]
+    }
+---
+# Source: sentry/templates/secret-snuba-env.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: RELEASE-NAME-sentry-snuba-env
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+type: Opaque
+data:
+  CLICKHOUSE_DATABASE: "ZGVmYXVsdA=="
+  CLICKHOUSE_USER: "ZGVmYXVsdA=="
+  CLICKHOUSE_PASSWORD: ""
+---
+# Source: sentry/charts/clickhouse/templates/configmap-config.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-clickhouse-config
+  labels:
+    app.kubernetes.io/name: clickhouse-config
+    app.kubernetes.io/instance: RELEASE-NAME-config
+    app.kubernetes.io/managed-by: Helm
+data:
+  config.xml: |-
+    <?xml version="1.0"?>
+    <yandex>
+        <path>/var/lib/clickhouse/</path>
+        <tmp_path>/var/lib/clickhouse/tmp/</tmp_path>
+        <user_files_path>/var/lib/clickhouse/user_files/</user_files_path>
+        <format_schema_path>/var/lib/clickhouse/format_schemas/</format_schema_path>
+
+        <include_from>/etc/clickhouse-server/metrica.d/metrica.xml</include_from>
+
+        <users_config>users.xml</users_config>
+
+        <display_name>RELEASE-NAME-clickhouse</display_name>
+        <listen_host>0.0.0.0</listen_host>
+        <http_port>8123</http_port>
+        <tcp_port>9000</tcp_port>
+        <interserver_http_port>9009</interserver_http_port>
+        <max_connections>4096</max_connections>
+        <keep_alive_timeout>3</keep_alive_timeout>
+        <max_concurrent_queries>100</max_concurrent_queries>
+        <uncompressed_cache_size>8589934592</uncompressed_cache_size>
+        <mark_cache_size>5368709120</mark_cache_size>
+        <timezone>UTC</timezone>
+        <umask>022</umask>
+        <mlock_executable>false</mlock_executable>
+        <remote_servers incl="clickhouse_remote_servers" optional="true" />
+        <zookeeper incl="zookeeper-servers" optional="true" />
+        <macros incl="macros" optional="true" />
+        <builtin_dictionaries_reload_interval>3600</builtin_dictionaries_reload_interval>
+        <max_session_timeout>3600</max_session_timeout>
+        <default_session_timeout>60</default_session_timeout>
+        <disable_internal_dns_cache>1</disable_internal_dns_cache>
+
+        <query_log>
+            <database>system</database>
+            <table>query_log</table>
+            <partition_by>toYYYYMM(event_date)</partition_by>
+            <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+        </query_log>
+
+        <query_thread_log>
+            <database>system</database>
+            <table>query_thread_log</table>
+            <partition_by>toYYYYMM(event_date)</partition_by>
+            <flush_interval_milliseconds>7500</flush_interval_milliseconds>
+        </query_thread_log>
+
+        <distributed_ddl>
+            <path>/clickhouse/task_queue/ddl</path>
+        </distributed_ddl>
+        <logger>
+            <level>trace</level>
+            <log>/var/log/clickhouse-server/clickhouse-server.log</log>
+            <errorlog>/var/log/clickhouse-server/clickhouse-server.err.log</errorlog>
+            <size>1000M</size>
+            <count>10</count>
+        </logger>
+    </yandex>
+---
+# Source: sentry/charts/clickhouse/templates/configmap-metrika.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-clickhouse-metrica
+  labels:
+    app.kubernetes.io/name: clickhouse-metrica
+    app.kubernetes.io/instance: RELEASE-NAME-metrica
+    app.kubernetes.io/managed-by: Helm
+data:
+  metrica.xml: |-
+    <?xml version="1.0"?>
+    <yandex>
+        <clickhouse_remote_servers>
+            <RELEASE-NAME-clickhouse>
+                <shard>
+                    <replica>
+                        <internal_replication>true</internal_replication>
+                        <host>RELEASE-NAME-clickhouse-0.RELEASE-NAME-clickhouse-headless.default.svc.cluster.local</host>
+                        <port>9000</port>
+                        <user>default</user>
+                        <compression>true</compression>
+                    </replica>
+                </shard>
+                <shard>
+                    <replica>
+                        <internal_replication>true</internal_replication>
+                        <host>RELEASE-NAME-clickhouse-1.RELEASE-NAME-clickhouse-headless.default.svc.cluster.local</host>
+                        <port>9000</port>
+                        <user>default</user>
+                        <compression>true</compression>
+                    </replica>
+                </shard>
+                <shard>
+                    <replica>
+                        <internal_replication>true</internal_replication>
+                        <host>RELEASE-NAME-clickhouse-2.RELEASE-NAME-clickhouse-headless.default.svc.cluster.local</host>
+                        <port>9000</port>
+                        <user>default</user>
+                        <compression>true</compression>
+                    </replica>
+                </shard>
+            </RELEASE-NAME-clickhouse>
+        </clickhouse_remote_servers>
+    </yandex>
+---
+# Source: sentry/charts/clickhouse/templates/configmap-users.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-clickhouse-users
+  labels:
+    app.kubernetes.io/name: clickhouse-users
+    app.kubernetes.io/instance: RELEASE-NAME-users
+    app.kubernetes.io/managed-by: Helm
+data:
+  users.xml: |-
+    <?xml version="1.0"?>
+    <yandex>
+    </yandex>
+---
+# Source: sentry/charts/kafka/templates/scripts-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-kafka-scripts
+  labels:
+    app.kubernetes.io/name: kafka
+    helm.sh/chart: kafka-12.0.0
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+data:
+  setup.sh: |-
+    #!/bin/bash
+
+    ID="${MY_POD_NAME#"RELEASE-NAME-kafka-"}"
+    export KAFKA_CFG_BROKER_ID="$ID"
+
+    exec /entrypoint.sh /run.sh
+---
+# Source: sentry/charts/nginx/templates/server-block-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-nginx-server-block
+  labels:
+    app.kubernetes.io/name: nginx
+    helm.sh/chart: nginx-9.3.3
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+data:
+  server-blocks-paths.conf: |-
+    include  "/opt/bitnami/nginx/conf/server_blocks/ldap/*.conf";
+    include  "/opt/bitnami/nginx/conf/server_blocks/common/*.conf";
+---
+# Source: sentry/charts/rabbitmq/templates/configuration.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-rabbitmq-config
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    helm.sh/chart: rabbitmq-8.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+data:
+  rabbitmq.conf: |-
+    ## Username and password
+    ##
+    default_user = guest
+    default_pass = CHANGEME
+    ## Clustering
+    ##
+    cluster_formation.peer_discovery_backend  = rabbit_peer_discovery_k8s
+    cluster_formation.k8s.host = kubernetes.default.svc.cluster.local
+    cluster_formation.node_cleanup.interval = 10
+    cluster_formation.node_cleanup.only_log_warning = true
+    cluster_partition_handling = autoheal
+    # queue master locator
+    queue_master_locator = min-masters
+    # enable guest user
+    loopback_users.guest = false
+    load_definitions = /app/load_definition.json
+---
+# Source: sentry/charts/redis/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-sentry-redis-configuration
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: sentry-redis
+    helm.sh/chart: redis-15.3.2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+data:
+  redis.conf: |-
+    # User-supplied common configuration:
+    # Enable AOF https://redis.io/topics/persistence#append-only-file
+    appendonly yes
+    # Disable RDB persistence, AOF persistence already enabled.
+    save ""
+    # End of common configuration
+  master.conf: |-
+    dir /data
+    # User-supplied master configuration:
+    rename-command FLUSHDB ""
+    rename-command FLUSHALL ""
+    # End of master configuration
+  replica.conf: |-
+    dir /data
+    slave-read-only yes
+    # User-supplied replica configuration:
+    rename-command FLUSHDB ""
+    rename-command FLUSHALL ""
+    # End of replica configuration
+---
+# Source: sentry/charts/redis/templates/health-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-sentry-redis-health
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: sentry-redis
+    helm.sh/chart: redis-15.3.2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+data:
+  ping_readiness_local.sh: |-
+    #!/bin/bash
+
+    [[ -f $REDIS_PASSWORD_FILE ]] && export REDIS_PASSWORD="$(< "${REDIS_PASSWORD_FILE}")"
+    [[ -n "$REDIS_PASSWORD" ]] && export REDISCLI_AUTH="$REDIS_PASSWORD"
+    response=$(
+      timeout -s 3 $1 \
+      redis-cli \
+        -h localhost \
+        -p $REDIS_PORT \
+        ping
+    )
+    if [ "$response" != "PONG" ]; then
+      echo "$response"
+      exit 1
+    fi
+  ping_liveness_local.sh: |-
+    #!/bin/bash
+
+    [[ -f $REDIS_PASSWORD_FILE ]] && export REDIS_PASSWORD="$(< "${REDIS_PASSWORD_FILE}")"
+    [[ -n "$REDIS_PASSWORD" ]] && export REDISCLI_AUTH="$REDIS_PASSWORD"
+    response=$(
+      timeout -s 3 $1 \
+      redis-cli \
+        -h localhost \
+        -p $REDIS_PORT \
+        ping
+    )
+    if [ "$response" != "PONG" ] && [ "$response" != "LOADING Redis is loading the dataset in memory" ]; then
+      echo "$response"
+      exit 1
+    fi
+  ping_readiness_master.sh: |-
+    #!/bin/bash
+
+    [[ -f $REDIS_MASTER_PASSWORD_FILE ]] && export REDIS_MASTER_PASSWORD="$(< "${REDIS_MASTER_PASSWORD_FILE}")"
+    [[ -n "$REDIS_MASTER_PASSWORD" ]] && export REDISCLI_AUTH="$REDIS_MASTER_PASSWORD"
+    response=$(
+      timeout -s 3 $1 \
+      redis-cli \
+        -h $REDIS_MASTER_HOST \
+        -p $REDIS_MASTER_PORT_NUMBER \
+        ping
+    )
+    if [ "$response" != "PONG" ]; then
+      echo "$response"
+      exit 1
+    fi
+  ping_liveness_master.sh: |-
+    #!/bin/bash
+
+    [[ -f $REDIS_MASTER_PASSWORD_FILE ]] && export REDIS_MASTER_PASSWORD="$(< "${REDIS_MASTER_PASSWORD_FILE}")"
+    [[ -n "$REDIS_MASTER_PASSWORD" ]] && export REDISCLI_AUTH="$REDIS_MASTER_PASSWORD"
+    response=$(
+      timeout -s 3 $1 \
+      redis-cli \
+        -h $REDIS_MASTER_HOST \
+        -p $REDIS_MASTER_PORT_NUMBER \
+        ping
+    )
+    if [ "$response" != "PONG" ] && [ "$response" != "LOADING Redis is loading the dataset in memory" ]; then
+      echo "$response"
+      exit 1
+    fi
+  ping_readiness_local_and_master.sh: |-
+    script_dir="$(dirname "$0")"
+    exit_status=0
+    "$script_dir/ping_readiness_local.sh" $1 || exit_status=$?
+    "$script_dir/ping_readiness_master.sh" $1 || exit_status=$?
+    exit $exit_status
+  ping_liveness_local_and_master.sh: |-
+    script_dir="$(dirname "$0")"
+    exit_status=0
+    "$script_dir/ping_liveness_local.sh" $1 || exit_status=$?
+    "$script_dir/ping_liveness_master.sh" $1 || exit_status=$?
+    exit $exit_status
+---
+# Source: sentry/charts/redis/templates/scripts-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-sentry-redis-scripts
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: sentry-redis
+    helm.sh/chart: redis-15.3.2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+data:
+  start-master.sh: |
+    #!/bin/bash
+
+    [[ -f $REDIS_PASSWORD_FILE ]] && export REDIS_PASSWORD="$(< "${REDIS_PASSWORD_FILE}")"
+    if [[ ! -f /opt/bitnami/redis/etc/master.conf ]];then
+        cp /opt/bitnami/redis/mounted-etc/master.conf /opt/bitnami/redis/etc/master.conf
+    fi
+    if [[ ! -f /opt/bitnami/redis/etc/redis.conf ]];then
+        cp /opt/bitnami/redis/mounted-etc/redis.conf /opt/bitnami/redis/etc/redis.conf
+    fi
+    ARGS=("--port" "${REDIS_PORT}")
+    ARGS+=("--protected-mode" "no")
+    ARGS+=("--include" "/opt/bitnami/redis/etc/redis.conf")
+    ARGS+=("--include" "/opt/bitnami/redis/etc/master.conf")
+    exec redis-server "${ARGS[@]}"
+  start-replica.sh: |
+    #!/bin/bash
+
+    [[ -f $REDIS_PASSWORD_FILE ]] && export REDIS_PASSWORD="$(< "${REDIS_PASSWORD_FILE}")"
+    [[ -f $REDIS_MASTER_PASSWORD_FILE ]] && export REDIS_MASTER_PASSWORD="$(< "${REDIS_MASTER_PASSWORD_FILE}")"
+    if [[ ! -f /opt/bitnami/redis/etc/replica.conf ]];then
+        cp /opt/bitnami/redis/mounted-etc/replica.conf /opt/bitnami/redis/etc/replica.conf
+    fi
+    if [[ ! -f /opt/bitnami/redis/etc/redis.conf ]];then
+        cp /opt/bitnami/redis/mounted-etc/redis.conf /opt/bitnami/redis/etc/redis.conf
+    fi
+    ARGS=("--port" "${REDIS_PORT}")
+    ARGS+=("--slaveof" "${REDIS_MASTER_HOST}" "${REDIS_MASTER_PORT_NUMBER}")
+    ARGS+=("--protected-mode" "no")
+    ARGS+=("--include" "/opt/bitnami/redis/etc/redis.conf")
+    ARGS+=("--include" "/opt/bitnami/redis/etc/replica.conf")
+    exec redis-server "${ARGS[@]}"
+---
+# Source: sentry/templates/configmap-nginx.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-sentry-nginx
+data:
+  server-block.conf: |
+    upstream relay {
+      server RELEASE-NAME-sentry-relay:3000;
+    }
+
+    upstream sentry {
+      server RELEASE-NAME-sentry-web:9000;
+    }
+
+    server {
+      listen 8080;
+
+      proxy_redirect off;
+      proxy_set_header Host $host;
+
+      location /api/store/ {
+        proxy_pass http://relay;
+      }
+
+      location ~ ^/api/[1-9]\d*/ {
+        proxy_pass http://relay;
+      }
+
+      location / {
+        proxy_pass http://sentry;
+      }
+    }
+---
+# Source: sentry/templates/configmap-relay.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-sentry-relay
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+data:
+  config.yml: |-
+    relay:
+      mode: managed
+      upstream: "http://RELEASE-NAME-sentry-web:9000/"
+      host: 0.0.0.0
+      port: 3000
+
+    processing:
+      enabled: true
+
+      kafka_config:
+        - name: "bootstrap.servers"
+          value: "RELEASE-NAME-kafka:9092"
+        - name: "message.max.bytes"
+          value: 50000000  # 50MB or bust
+      redis: "redis://:@RELEASE-NAME-sentry-redis-master:6379"
+
+    # No YAML relay config given
+---
+# Source: sentry/templates/configmap-snuba.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-sentry-snuba
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+data:
+  settings.py: |
+    import os
+
+    from snuba.settings import *
+
+    env = os.environ.get
+
+    DEBUG = env("DEBUG", "0").lower() in ("1", "true")
+
+    # Clickhouse Options
+    CLUSTERS[0]["host"] = env("CLICKHOUSE_HOST", "RELEASE-NAME-clickhouse")
+    CLUSTERS[0]["port"] = int(9000)
+    CLUSTERS[0]["http_port"] = int(8123)
+    CLUSTERS[0]["database"] = env("CLICKHOUSE_DATABASE", "default")
+    CLUSTERS[0]["user"] = env("CLICKHOUSE_USER", "default")
+    CLUSTERS[0]["password"] = env("CLICKHOUSE_PASSWORD", "")
+    # FIXME: Snuba will be able to migrate multi node clusters in the future
+    CLUSTERS[0]["single_node"] = env("CLICKHOUSE_SINGLE_NODE", "false").lower() == "true"
+
+    # Redis Options
+    REDIS_HOST = "RELEASE-NAME-sentry-redis-master"
+    REDIS_PORT = 6379
+    REDIS_PASSWORD = ""
+    REDIS_DB = int(env("REDIS_DB", 1))
+
+    # No Python Extension Config Given
+---
+# Source: sentry/templates/pvc.yaml
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: RELEASE-NAME-sentry-data
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  accessModes:
+    - "ReadWriteOnce"
+  resources:
+    requests:
+      storage: "10Gi"
+---
+# Source: sentry/charts/rabbitmq/templates/role.yaml
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: RELEASE-NAME-rabbitmq-endpoint-reader
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    helm.sh/chart: rabbitmq-8.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+rules:
+  - apiGroups: [""]
+    resources: ["endpoints"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create"]
+---
+# Source: sentry/charts/rabbitmq/templates/rolebinding.yaml
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: RELEASE-NAME-rabbitmq-endpoint-reader
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    helm.sh/chart: rabbitmq-8.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+subjects:
+  - kind: ServiceAccount
+    name: RELEASE-NAME-rabbitmq
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: RELEASE-NAME-rabbitmq-endpoint-reader
+---
+# Source: sentry/charts/clickhouse/templates/svc-clickhouse-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-clickhouse-headless
+  labels:
+    app.kubernetes.io/name: clickhouse-headless
+    app.kubernetes.io/instance: RELEASE-NAME-headless
+    app.kubernetes.io/managed-by: Helm
+spec:
+  clusterIP: "None"
+  ports:
+  - port: 9000
+    targetPort: tcp-port
+    protocol: TCP
+    name: tcp-port
+  - port: 8123
+    targetPort: http-port
+    protocol: TCP
+    name: http-port
+  - port: 9009
+    targetPort: inter-http-port
+    protocol: TCP
+    name: inter-http-port
+  selector:
+    app.kubernetes.io/name: clickhouse
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: sentry/charts/clickhouse/templates/svc-clickhouse-replica-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-clickhouse-replica-headless
+  labels:
+    app.kubernetes.io/name: clickhouse-replica-headless
+    app.kubernetes.io/instance: RELEASE-NAME-replica-headless
+    app.kubernetes.io/managed-by: Helm
+spec:
+  clusterIP: "None"
+  ports:
+  - port: 9000
+    targetPort: tcp-port
+    protocol: TCP
+    name: tcp-port
+  - port: 8123
+    targetPort: http-port
+    protocol: TCP
+    name: http-port
+  - port: 9009
+    targetPort: inter-http-port
+    protocol: TCP
+    name: inter-http-port
+  selector:
+    app.kubernetes.io/name: clickhouse-replica
+    app.kubernetes.io/instance: RELEASE-NAME-replica
+---
+# Source: sentry/charts/clickhouse/templates/svc-clickhouse-replica.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-clickhouse-replica
+  labels:
+    app.kubernetes.io/name: clickhouse-replica
+    app.kubernetes.io/instance: RELEASE-NAME-replica
+    app.kubernetes.io/managed-by: Helm
+spec:
+  ports:
+  - port: 9000
+    targetPort: tcp-port
+    protocol: TCP
+    name: tcp-port
+  - port: 8123
+    targetPort: http-port
+    protocol: TCP
+    name: http-port
+  - port: 9009
+    targetPort: inter-http-port
+    protocol: TCP
+    name: inter-http-port
+  selector:
+    app.kubernetes.io/name: clickhouse-replica
+    app.kubernetes.io/instance: RELEASE-NAME-replica
+---
+# Source: sentry/charts/clickhouse/templates/svc-clickhouse.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-clickhouse
+  labels:
+    app.kubernetes.io/name: clickhouse
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  ports:
+  - port: 9000
+    targetPort: tcp-port
+    protocol: TCP
+    name: tcp-port
+  - port: 8123
+    targetPort: http-port
+    protocol: TCP
+    name: http-port
+  - port: 9009
+    targetPort: inter-http-port
+    protocol: TCP
+    name: inter-http-port
+  selector:
+    app.kubernetes.io/name: clickhouse
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: sentry/charts/kafka/charts/zookeeper/templates/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-zookeeper-headless
+  namespace: default
+  labels:
+    app.kubernetes.io/name: zookeeper
+    helm.sh/chart: zookeeper-6.0.0
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: zookeeper
+spec:
+  type: ClusterIP
+  clusterIP: None
+  publishNotReadyAddresses: true
+  ports:
+    
+    - name: tcp-client
+      port: 2181
+      targetPort: client
+    
+    
+    - name: follower
+      port: 2888
+      targetPort: follower
+    - name: tcp-election
+      port: 3888
+      targetPort: election
+  selector:
+    app.kubernetes.io/name: zookeeper
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/component: zookeeper
+---
+# Source: sentry/charts/kafka/charts/zookeeper/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-zookeeper
+  namespace: default
+  labels:
+    app.kubernetes.io/name: zookeeper
+    helm.sh/chart: zookeeper-6.0.0
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: zookeeper
+spec:
+  type: ClusterIP
+  ports:
+    
+    - name: tcp-client
+      port: 2181
+      targetPort: client
+    
+    
+    - name: follower
+      port: 2888
+      targetPort: follower
+    - name: tcp-election
+      port: 3888
+      targetPort: election
+  selector:
+    app.kubernetes.io/name: zookeeper
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/component: zookeeper
+---
+# Source: sentry/charts/kafka/templates/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-kafka-headless
+  labels:
+    app.kubernetes.io/name: kafka
+    helm.sh/chart: kafka-12.0.0
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: kafka
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: tcp-client
+      port: 9092
+      protocol: TCP
+      targetPort: kafka-client
+    - name: tcp-internal
+      port: 9093
+      protocol: TCP
+      targetPort: kafka-internal
+  selector:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/component: kafka
+---
+# Source: sentry/charts/kafka/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-kafka
+  labels:
+    app.kubernetes.io/name: kafka
+    helm.sh/chart: kafka-12.0.0
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: kafka
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-client
+      port: 9092
+      protocol: TCP
+      targetPort: kafka-client
+      nodePort: null
+  selector:
+    app.kubernetes.io/name: kafka
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/component: kafka
+---
+# Source: sentry/charts/nginx/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-nginx
+  labels:
+    app.kubernetes.io/name: nginx
+    helm.sh/chart: nginx-9.3.3
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+  selector:
+    app.kubernetes.io/name: nginx
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: sentry/charts/postgresql/templates/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-sentry-postgresql-headless
+  labels:
+    app.kubernetes.io/name: sentry-postgresql
+    helm.sh/chart: postgresql-10.2.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    # Use this annotation in addition to the actual publishNotReadyAddresses
+    # field below because the annotation will stop being respected soon but the
+    # field is broken in some versions of Kubernetes:
+    # https://github.com/kubernetes/kubernetes/issues/58662
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  # We want all pods in the StatefulSet to have their addresses published for
+  # the sake of the other Postgresql pods even before they're ready, since they
+  # have to be able to talk to each other in order to become ready.
+  publishNotReadyAddresses: true
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    app.kubernetes.io/name: sentry-postgresql
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: sentry/charts/postgresql/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-sentry-postgresql
+  labels:
+    app.kubernetes.io/name: sentry-postgresql
+    helm.sh/chart: postgresql-10.2.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    app.kubernetes.io/name: sentry-postgresql
+    app.kubernetes.io/instance: RELEASE-NAME
+    role: primary
+---
+# Source: sentry/charts/rabbitmq/templates/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-rabbitmq-headless
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    helm.sh/chart: rabbitmq-8.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  clusterIP: None
+  ports:
+    - name: epmd
+      port: 4369
+      targetPort: epmd
+    - name: amqp
+      port: 5672
+      targetPort: amqp
+    - name: dist
+      port: 25672
+      targetPort: dist
+    - name: http-stats
+      port: 15672
+      targetPort: stats
+  selector: 
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: sentry/charts/rabbitmq/templates/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-rabbitmq
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    helm.sh/chart: rabbitmq-8.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - name: amqp
+      port: 5672
+      targetPort: amqp
+      nodePort: null
+    - name: epmd
+      port: 4369
+      targetPort: epmd
+      nodePort: null
+    - name: dist
+      port: 25672
+      targetPort: dist
+      nodePort: null
+    - name: http-stats
+      port: 15672
+      targetPort: stats
+      nodePort: null
+  selector: 
+    app.kubernetes.io/name: rabbitmq
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: sentry/charts/redis/templates/headless-svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-sentry-redis-headless
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: sentry-redis
+    helm.sh/chart: redis-15.3.2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: tcp-redis
+      port: 6379
+      targetPort: redis
+  selector:
+    app.kubernetes.io/name: sentry-redis
+    app.kubernetes.io/instance: RELEASE-NAME
+---
+# Source: sentry/charts/redis/templates/master/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-sentry-redis-master
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: sentry-redis
+    helm.sh/chart: redis-15.3.2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: master
+spec:
+  type: ClusterIP
+  
+  ports:
+    - name: tcp-redis
+      port: 6379
+      targetPort: redis
+      nodePort: null
+  selector:
+    app.kubernetes.io/name: sentry-redis
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/component: master
+---
+# Source: sentry/charts/redis/templates/replicas/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-sentry-redis-replicas
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: sentry-redis
+    helm.sh/chart: redis-15.3.2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: replica
+spec:
+  type: ClusterIP
+  ports:
+    - name: tcp-redis
+      port: 6379
+      targetPort: redis
+      nodePort: null
+  selector:
+    app.kubernetes.io/name: sentry-redis
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/component: replica
+---
+# Source: sentry/templates/service-relay.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-sentry-relay
+  annotations:
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3000
+    targetPort: 3000
+    protocol: TCP
+    name: sentry-relay
+  selector:
+    app: RELEASE-NAME-sentry
+    role: relay
+---
+# Source: sentry/templates/service-sentry.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-sentry-web
+  annotations:
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9000
+    targetPort: 9000
+    protocol: TCP
+    name: sentry
+  selector:
+    app: RELEASE-NAME-sentry
+    role: web
+---
+# Source: sentry/templates/service-snuba.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: RELEASE-NAME-sentry-snuba
+  annotations:
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  type: ClusterIP
+  ports:
+  - port: 1218
+    targetPort: 1218
+    protocol: TCP
+    name: sentry
+  selector:
+    app: RELEASE-NAME-sentry
+    role: snuba-api
+---
+# Source: sentry/charts/nginx/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-nginx
+  labels:
+    app.kubernetes.io/name: nginx
+    helm.sh/chart: nginx-9.3.3
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: nginx
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: nginx
+        helm.sh/chart: nginx-9.3.3
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+    spec:
+      
+      serviceAccountName: default
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: nginx
+                    app.kubernetes.io/instance: RELEASE-NAME
+                namespaces:
+                  - "default"
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      containers:
+        - name: nginx
+          image: docker.io/bitnami/nginx:1.21.0-debian-10-r21
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+          ports:
+            - name: http
+              containerPort: 8080
+          livenessProbe:
+            tcpSocket:
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          readinessProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: nginx-server-block-paths
+              mountPath: /opt/bitnami/nginx/conf/server_blocks
+            - name: nginx-server-block
+              mountPath: /opt/bitnami/nginx/conf/server_blocks/common
+      volumes:
+        - name: nginx-server-block-paths
+          configMap:
+            name: RELEASE-NAME-nginx-server-block
+            items:
+              - key: server-blocks-paths.conf
+                path: server-blocks-paths.conf
+        - name: nginx-server-block
+          configMap:
+            name: RELEASE-NAME-nginx
+---
+# Source: sentry/templates/deployment-sentry-cron.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-cron
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: cron
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/configYml: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+        checksum/sentryConfPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: 854f0a3cfab92875aa637b455aa603e5ea0099ae18ed9768c842be1c920e7188
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: cron
+    spec:
+      affinity:
+      containers:
+      - name: sentry-cron
+        image: "getsentry/sentry:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command: ["sentry"]
+        args:
+          - "run"
+          - "cron"
+        env:
+        - name: SNUBA
+          value: http://RELEASE-NAME-sentry-snuba:1218
+        - name: C_FORCE_ROOT
+          value: "true"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-postgresql
+              key: postgresql-password
+        
+        volumeMounts:
+        - mountPath: /etc/sentry
+          name: config
+          readOnly: true
+        - mountPath: /var/lib/sentry/files
+          name: sentry-data
+        resources:
+            {}
+      volumes:
+      - name: config
+        configMap:
+          name: RELEASE-NAME-sentry-sentry
+      - name: sentry-data
+        emptyDir: {}
+---
+# Source: sentry/templates/deployment-sentry-web.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-web
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  revisionHistoryLimit: 10
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: web
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/configYml: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+        checksum/sentryConfPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: bdd7ab8ced3241fc8227e3d14b76793cee83c0740b4d15bf68754c30efca307e
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: web
+    spec:
+      affinity:
+      containers:
+      - name: sentry-web
+        image: "getsentry/sentry:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command: ["sentry", "run", "web"]
+        ports:
+        - containerPort: 9000
+        env:
+        - name: SENTRY_EMAIL_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-smtp
+              key: SENTRY_EMAIL_PASSWORD
+        - name: SENTRY_EMAIL_HOST
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-smtp
+              key: SENTRY_EMAIL_HOST
+        - name: SNUBA
+          value: http://RELEASE-NAME-sentry-snuba:1218
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-postgresql
+              key: postgresql-password
+        
+        
+        volumeMounts:
+        - mountPath: /etc/sentry
+          name: config
+          readOnly: true
+        - mountPath: /var/lib/sentry/files
+          name: sentry-data
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /_health/
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        readinessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /_health/
+            port: 9000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        resources:
+            {}
+      volumes:
+      - name: config
+        configMap:
+          name: RELEASE-NAME-sentry-sentry
+      - name: sentry-data
+        persistentVolumeClaim:
+          claimName: RELEASE-NAME-sentry-data
+---
+# Source: sentry/templates/deployment-sentry-worker.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-worker
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: worker
+  replicas: 3
+  template:
+    metadata:
+      annotations:
+        checksum/configYml: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+        checksum/sentryConfPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: f736c3e688ae68d25e057e917728c3f50cb04d565ee5df18bee8c3e7dce3d105
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: worker
+    spec:
+      affinity:
+      containers:
+      - name: sentry-worker
+        image: "getsentry/sentry:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command: ["sentry"]
+        args:
+          - "run"
+          - "worker"
+        env:
+        - name: SNUBA
+          value: http://RELEASE-NAME-sentry-snuba:1218
+        - name: C_FORCE_ROOT
+          value: "true"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-postgresql
+              key: postgresql-password
+        
+        volumeMounts:
+        - mountPath: /etc/sentry
+          name: config
+          readOnly: true
+        - mountPath: /var/lib/sentry/files
+          name: sentry-data
+        resources:
+            {}
+      volumes:
+      - name: config
+        configMap:
+          name: RELEASE-NAME-sentry-sentry
+      - name: sentry-data
+        emptyDir: {}
+---
+# Source: sentry/templates/deployment-snuba-api.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-snuba-api
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: RELEASE-NAME-sentry
+      release: "RELEASE-NAME"
+      role: snuba-api
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-api
+    spec:
+      affinity:
+      containers:
+      - name: sentry-snuba
+        image: "getsentry/snuba:21.8.0"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 1218
+        env:
+        - name: SNUBA_SETTINGS
+          value: /etc/snuba/settings.py
+        - name: DEFAULT_BROKERS
+          value: "RELEASE-NAME-kafka:9092"
+        envFrom:
+        - secretRef:
+            name: RELEASE-NAME-sentry-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /
+            port: 1218
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        readinessProbe:
+          failureThreshold: 10
+          httpGet:
+            path: /
+            port: 1218
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        resources:
+            {}
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/charts/clickhouse/templates/statefulset-clickhouse.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-clickhouse
+  labels:
+    app.kubernetes.io/name: clickhouse
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 3
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  serviceName: RELEASE-NAME-clickhouse-headless
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: clickhouse
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      annotations:
+        checksum/config: 55036c1910eece9f5c70d93652d1de69684f51955470d3960e6a51e70ad43e2c
+      labels:
+        app.kubernetes.io/name: clickhouse
+        app.kubernetes.io/instance: RELEASE-NAME
+    spec:
+      initContainers:
+      - name: init
+        image: busybox:1.31.0
+        imagePullPolicy: IfNotPresent
+        args:
+        - /bin/sh
+        - -c
+        - |
+          mkdir -p /etc/clickhouse-server/metrica.d
+      containers:
+      - name: RELEASE-NAME-clickhouse
+        image: yandex/clickhouse-server:20.8.9.6
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http-port
+          containerPort: 8123
+        - name: tcp-port
+          containerPort: 9000
+        - name: inter-http-port
+          containerPort: 9009
+        livenessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        readinessProbe:
+          tcpSocket:
+            port: 9000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+          successThreshold: 1
+        volumeMounts:
+        - name: RELEASE-NAME-clickhouse-data
+          mountPath: /var/lib/clickhouse
+        - name: RELEASE-NAME-clickhouse-logs
+          mountPath: /var/log/clickhouse-server
+        - name: RELEASE-NAME-clickhouse-config
+          mountPath: /etc/clickhouse-server/config.d
+        - name: RELEASE-NAME-clickhouse-metrica
+          mountPath: /etc/clickhouse-server/metrica.d
+        - name: RELEASE-NAME-clickhouse-users
+          mountPath: /etc/clickhouse-server/users.d
+      volumes:
+      - name: RELEASE-NAME-clickhouse-data
+        persistentVolumeClaim:
+          claimName: RELEASE-NAME-clickhouse-data
+      - name: RELEASE-NAME-clickhouse-logs
+        emptyDir: {}
+      - name: RELEASE-NAME-clickhouse-config
+        configMap:
+          name: RELEASE-NAME-clickhouse-config
+          items:
+          - key: config.xml
+            path: config.xml
+      - name: RELEASE-NAME-clickhouse-metrica
+        configMap:
+          name: RELEASE-NAME-clickhouse-metrica
+          items:
+          - key: metrica.xml
+            path: metrica.xml
+      - name: RELEASE-NAME-clickhouse-users
+        configMap:
+          name: RELEASE-NAME-clickhouse-users
+          items:
+          - key: users.xml
+            path: users.xml
+  volumeClaimTemplates:
+  - metadata:
+      name: RELEASE-NAME-clickhouse-data
+      labels:
+        app.kubernetes.io/name: clickhouse-data
+        app.kubernetes.io/instance: RELEASE-NAME-data
+        app.kubernetes.io/managed-by: Helm
+    spec:
+      accessModes:
+      - "ReadWriteOnce"
+      resources:
+        requests:
+          storage: "30Gi"
+---
+# Source: sentry/charts/kafka/charts/zookeeper/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-zookeeper
+  namespace: default
+  labels:
+    app.kubernetes.io/name: zookeeper
+    helm.sh/chart: zookeeper-6.0.0
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: zookeeper
+    role: zookeeper
+spec:
+  serviceName: RELEASE-NAME-zookeeper-headless
+  replicas: 1
+  podManagementPolicy: Parallel
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zookeeper
+      app.kubernetes.io/instance: RELEASE-NAME
+      app.kubernetes.io/component: zookeeper
+  template:
+    metadata:
+      name: RELEASE-NAME-zookeeper
+      labels:
+        app.kubernetes.io/name: zookeeper
+        helm.sh/chart: zookeeper-6.0.0
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: zookeeper
+    spec:
+      
+      serviceAccountName: default
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: zookeeper
+          image: docker.io/bitnami/zookeeper:3.6.2-debian-10-r58
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            runAsUser: 1001
+          command:
+            - bash
+            - -ec
+            - |
+                # Execute entrypoint as usual after obtaining ZOO_SERVER_ID based on POD hostname
+                HOSTNAME=`hostname -s`
+                if [[ $HOSTNAME =~ (.*)-([0-9]+)$ ]]; then
+                  ORD=${BASH_REMATCH[2]}
+                  export ZOO_SERVER_ID=$((ORD+1))
+                else
+                  echo "Failed to get index from hostname $HOST"
+                  exit 1
+                fi
+                exec /entrypoint.sh /run.sh
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          env:
+            - name: ZOO_DATA_LOG_DIR
+              value: ""
+            - name: ZOO_PORT_NUMBER
+              value: "2181"
+            - name: ZOO_TICK_TIME
+              value: "2000"
+            - name: ZOO_INIT_LIMIT
+              value: "10"
+            - name: ZOO_SYNC_LIMIT
+              value: "5"
+            - name: ZOO_MAX_CLIENT_CNXNS
+              value: "60"
+            - name: ZOO_4LW_COMMANDS_WHITELIST
+              value: "srvr, mntr, ruok"
+            - name: ZOO_LISTEN_ALLIPS_ENABLED
+              value: "no"
+            - name: ZOO_AUTOPURGE_INTERVAL
+              value: "0"
+            - name: ZOO_AUTOPURGE_RETAIN_COUNT
+              value: "3"
+            - name: ZOO_MAX_SESSION_TIMEOUT
+              value: "40000"
+            - name: ZOO_SERVERS
+              value: RELEASE-NAME-zookeeper-0.RELEASE-NAME-zookeeper-headless.default.svc.cluster.local:2888:3888 
+            - name: ZOO_ENABLE_AUTH
+              value: "no"
+            - name: ZOO_HEAP_SIZE
+              value: "1024"
+            - name: ZOO_LOG_LEVEL
+              value: "ERROR"
+            - name: ALLOW_ANONYMOUS_LOGIN
+              value: "yes"
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+          ports:
+            
+            - name: client
+              containerPort: 2181
+            
+            
+            - name: follower
+              containerPort: 2888
+            - name: election
+              containerPort: 3888
+          livenessProbe:
+            exec:
+              command: ['/bin/bash', '-c', 'echo "ruok" | timeout 2 nc -w 2 localhost 2181 | grep imok']
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command: ['/bin/bash', '-c', 'echo "ruok" | timeout 2 nc -w 2 localhost 2181 | grep imok']
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/zookeeper
+      volumes:
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        annotations:
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"
+---
+# Source: sentry/charts/kafka/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-kafka
+  labels:
+    app.kubernetes.io/name: kafka
+    helm.sh/chart: kafka-12.0.0
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: kafka
+spec:
+  podManagementPolicy: Parallel
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kafka
+      app.kubernetes.io/instance: RELEASE-NAME
+      app.kubernetes.io/component: kafka
+  serviceName: RELEASE-NAME-kafka-headless
+  updateStrategy:
+    type: "RollingUpdate"
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kafka
+        helm.sh/chart: kafka-12.0.0
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: kafka
+    spec:      
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+      serviceAccountName: RELEASE-NAME-kafka
+      containers:
+        - name: kafka
+          image: docker.io/bitnami/kafka:2.6.0-debian-10-r78
+          imagePullPolicy: "IfNotPresent"
+          command:
+            - /scripts/setup.sh
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: KAFKA_CFG_ZOOKEEPER_CONNECT
+              value: "RELEASE-NAME-zookeeper"
+            - name: KAFKA_INTER_BROKER_LISTENER_NAME
+              value: "INTERNAL"
+            - name: KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP
+              value: "INTERNAL:PLAINTEXT,CLIENT:PLAINTEXT"
+            - name: KAFKA_CFG_LISTENERS
+              value: "INTERNAL://:9093,CLIENT://:9092"
+            - name: KAFKA_CFG_ADVERTISED_LISTENERS
+              value: "INTERNAL://$(MY_POD_NAME).RELEASE-NAME-kafka-headless.default.svc.cluster.local:9093,CLIENT://$(MY_POD_NAME).RELEASE-NAME-kafka-headless.default.svc.cluster.local:9092"
+            - name: ALLOW_PLAINTEXT_LISTENER
+              value: "yes"
+            - name: KAFKA_CFG_DELETE_TOPIC_ENABLE
+              value: "false"
+            - name: KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE
+              value: "true"
+            - name: KAFKA_HEAP_OPTS
+              value: "-Xmx1024m -Xms1024m"
+            - name: KAFKA_CFG_LOG_FLUSH_INTERVAL_MESSAGES
+              value: "10000"
+            - name: KAFKA_CFG_LOG_FLUSH_INTERVAL_MS
+              value: "1000"
+            - name: KAFKA_CFG_LOG_RETENTION_BYTES
+              value: "1073741824"
+            - name: KAFKA_CFG_LOG_RETENTION_CHECK_INTERVALS_MS
+              value: "300000"
+            - name: KAFKA_CFG_LOG_RETENTION_HOURS
+              value: "168"
+            - name: KAFKA_CFG_MESSAGE_MAX_BYTES
+              value: "50000000"
+            - name: KAFKA_CFG_LOG_SEGMENT_BYTES
+              value: "1073741824"
+            - name: KAFKA_CFG_LOG_DIRS
+              value: "/bitnami/kafka/data"
+            - name: KAFKA_CFG_DEFAULT_REPLICATION_FACTOR
+              value: "3"
+            - name: KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR
+              value: "3"
+            - name: KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR
+              value: "3"
+            - name: KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR
+              value: "3"
+            - name: KAFKA_CFG_NUM_IO_THREADS
+              value: "8"
+            - name: KAFKA_CFG_NUM_NETWORK_THREADS
+              value: "3"
+            - name: KAFKA_CFG_NUM_PARTITIONS
+              value: "1"
+            - name: KAFKA_CFG_NUM_RECOVERY_THREADS_PER_DATA_DIR
+              value: "1"
+            - name: KAFKA_CFG_SOCKET_RECEIVE_BUFFER_BYTES
+              value: "102400"
+            - name: KAFKA_CFG_SOCKET_REQUEST_MAX_BYTES
+              value: "50000000"
+            - name: KAFKA_CFG_SOCKET_SEND_BUFFER_BYTES
+              value: "102400"
+            - name: KAFKA_CFG_ZOOKEEPER_CONNECTION_TIMEOUT_MS
+              value: "6000"
+          ports:
+            - name: kafka-client
+              containerPort: 9092
+            - name: kafka-internal
+              containerPort: 9093
+          livenessProbe:
+            tcpSocket:
+              port: kafka-client
+            initialDelaySeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 
+            periodSeconds: 
+            successThreshold: 
+          readinessProbe:
+            tcpSocket:
+              port: kafka-client
+            initialDelaySeconds: 5
+            timeoutSeconds: 5
+            failureThreshold: 6
+            periodSeconds: 
+            successThreshold: 
+          resources:
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: data
+              mountPath: /bitnami/kafka
+            - name: scripts
+              mountPath: /scripts/setup.sh
+              subPath: setup.sh
+      volumes:
+        - name: scripts
+          configMap:
+            name: RELEASE-NAME-kafka-scripts
+            defaultMode: 0755
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"
+---
+# Source: sentry/charts/postgresql/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-sentry-postgresql
+  labels:
+    app.kubernetes.io/name: sentry-postgresql
+    helm.sh/chart: postgresql-10.2.4
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: primary
+  annotations:
+spec:
+  serviceName: RELEASE-NAME-sentry-postgresql-headless
+  replicas: 1
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sentry-postgresql
+      app.kubernetes.io/instance: RELEASE-NAME
+      role: primary
+  template:
+    metadata:
+      name: RELEASE-NAME-sentry-postgresql
+      labels:
+        app.kubernetes.io/name: sentry-postgresql
+        helm.sh/chart: postgresql-10.2.4
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        role: primary
+        app.kubernetes.io/component: primary
+    spec:      
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: sentry-postgresql
+                    app.kubernetes.io/instance: RELEASE-NAME
+                    app.kubernetes.io/component: primary
+                namespaces:
+                  - "default"
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+      containers:
+        - name: RELEASE-NAME-sentry-postgresql
+          image: docker.io/bitnami/postgresql:11.10.0-debian-10-r60
+          imagePullPolicy: "IfNotPresent"
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          securityContext:
+            runAsUser: 1001
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: POSTGRESQL_PORT_NUMBER
+              value: "5432"
+            - name: POSTGRESQL_VOLUME_DIR
+              value: "/bitnami/postgresql"
+            - name: PGDATA
+              value: "/bitnami/postgresql/data"
+            - name: POSTGRES_USER
+              value: "postgres"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: RELEASE-NAME-sentry-postgresql
+                  key: postgresql-password
+            - name: POSTGRES_DB
+              value: "sentry"
+            - name: POSTGRESQL_ENABLE_LDAP
+              value: "no"
+            - name: POSTGRESQL_ENABLE_TLS
+              value: "no"
+            - name: POSTGRESQL_LOG_HOSTNAME
+              value: "false"
+            - name: POSTGRESQL_LOG_CONNECTIONS
+              value: "false"
+            - name: POSTGRESQL_LOG_DISCONNECTIONS
+              value: "false"
+            - name: POSTGRESQL_PGAUDIT_LOG_CATALOG
+              value: "off"
+            - name: POSTGRESQL_CLIENT_MIN_MESSAGES
+              value: "error"
+            - name: POSTGRESQL_SHARED_PRELOAD_LIBRARIES
+              value: "pgaudit"
+          ports:
+            - name: tcp-postgresql
+              containerPort: 5432
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - exec pg_isready -U "postgres" -d "dbname=sentry" -h 127.0.0.1 -p 5432
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - -e
+                - |
+                  exec pg_isready -U "postgres" -d "dbname=sentry" -h 127.0.0.1 -p 5432
+                  [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 6
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - name: data
+              mountPath: /bitnami/postgresql
+              subPath: 
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+            sizeLimit: 1Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"
+---
+# Source: sentry/charts/rabbitmq/templates/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-rabbitmq
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: rabbitmq
+    helm.sh/chart: rabbitmq-8.9.1
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+spec:
+  serviceName: RELEASE-NAME-rabbitmq-headless
+  podManagementPolicy: OrderedReady
+  replicas: 3
+  updateStrategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: rabbitmq
+      app.kubernetes.io/instance: RELEASE-NAME
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: rabbitmq
+        helm.sh/chart: rabbitmq-8.9.1
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+      annotations:
+        checksum/config: de9b48f0566b5720f329ce8cb502916bc9918f8440eb710c1227447163c0cb6c
+        checksum/secret: 136adb5480facde200526f0ae26d2d67bda5f89ef798120ab860420f7952c6e8
+    spec:
+      
+      serviceAccountName: RELEASE-NAME-rabbitmq
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: rabbitmq
+                    app.kubernetes.io/instance: RELEASE-NAME
+                namespaces:
+                  - "default"
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+        runAsUser: 1001
+      terminationGracePeriodSeconds: 120
+      containers:
+        - name: rabbitmq
+          image: docker.io/bitnami/rabbitmq:3.8.11-debian-10-r0
+          imagePullPolicy: "IfNotPresent"
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: MY_POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: MY_POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: MY_POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: K8S_SERVICE_NAME
+              value: "RELEASE-NAME-rabbitmq-headless"
+            - name: K8S_ADDRESS_TYPE
+              value: hostname
+            - name: RABBITMQ_FORCE_BOOT
+              value: "yes"
+            - name: RABBITMQ_NODE_NAME
+              value: "rabbit@$(MY_POD_NAME).$(K8S_SERVICE_NAME).$(MY_POD_NAMESPACE).svc.cluster.local"
+            - name: K8S_HOSTNAME_SUFFIX
+              value: ".$(K8S_SERVICE_NAME).$(MY_POD_NAMESPACE).svc.cluster.local"
+            - name: RABBITMQ_MNESIA_DIR
+              value: "/bitnami/rabbitmq/mnesia/$(RABBITMQ_NODE_NAME)"
+            - name: RABBITMQ_LDAP_ENABLE
+              value: "no"
+            - name: RABBITMQ_LOGS
+              value: "-"
+            - name: RABBITMQ_ULIMIT_NOFILES
+              value: "65536"
+            - name: RABBITMQ_USE_LONGNAME
+              value: "true"
+            - name: RABBITMQ_ERL_COOKIE
+              valueFrom:
+                secretKeyRef:
+                  name: RELEASE-NAME-rabbitmq
+                  key: rabbitmq-erlang-cookie
+            - name: RABBITMQ_USERNAME
+              value: "guest"
+            - name: RABBITMQ_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: RELEASE-NAME-rabbitmq
+                  key: rabbitmq-password
+            - name: RABBITMQ_PLUGINS
+              value: "rabbitmq_management, rabbitmq_peer_discovery_k8s, rabbitmq_auth_backend_ldap"
+          ports:
+            - name: amqp
+              containerPort: 5672
+            - name: dist
+              containerPort: 25672
+            - name: stats
+              containerPort: 15672
+            - name: epmd
+              containerPort: 4369
+          livenessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - rabbitmq-diagnostics -q ping
+            initialDelaySeconds: 120
+            periodSeconds: 30
+            timeoutSeconds: 20
+            successThreshold: 1
+            failureThreshold: 6
+          readinessProbe:
+            exec:
+              command:
+                - /bin/bash
+                - -ec
+                - rabbitmq-diagnostics -q check_running && rabbitmq-diagnostics -q check_local_alarms
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 20
+            successThreshold: 1
+            failureThreshold: 3
+          resources:
+            limits: {}
+            requests: {}
+          lifecycle:
+            postStart:
+              exec:
+                command:
+                  - /bin/bash
+                  - -ec
+                  - |
+                    until rabbitmqctl cluster_status >/dev/null; do
+                        echo "Waiting for cluster readiness..."
+                        sleep 5
+                    done
+                    rabbitmq-queues rebalance "all"
+            preStop:
+              exec:
+                command:
+                  - /bin/bash
+                  - -ec
+                  - |
+                    if [[ -f /opt/bitnami/scripts/rabbitmq/nodeshutdown.sh ]]; then
+                        /opt/bitnami/scripts/rabbitmq/nodeshutdown.sh -t "120" -d  "false"
+                    else
+                        rabbitmqctl stop_app
+                    fi
+          volumeMounts:
+            - name: configuration
+              mountPath: /bitnami/rabbitmq/conf
+            - name: data
+              mountPath: /bitnami/rabbitmq/mnesia
+            - name: load-definition-volume
+              mountPath: /app
+              readOnly: true
+      volumes:
+        - name: configuration
+          configMap:
+            name: RELEASE-NAME-rabbitmq-config
+            items:
+              - key: rabbitmq.conf
+                path: rabbitmq.conf
+        - name: load-definition-volume
+          secret:
+            secretName: "load-definition"
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+        labels:
+          app.kubernetes.io/name: rabbitmq
+          app.kubernetes.io/instance: RELEASE-NAME
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"
+---
+# Source: sentry/charts/redis/templates/master/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-sentry-redis-master
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: sentry-redis
+    helm.sh/chart: redis-15.3.2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sentry-redis
+      app.kubernetes.io/instance: RELEASE-NAME
+      app.kubernetes.io/component: master
+  serviceName: RELEASE-NAME-sentry-redis-headless
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sentry-redis
+        helm.sh/chart: redis-15.3.2
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: master
+      annotations:
+        checksum/configmap: 8c068e2d09ef5fc4c17d22a54bd9d650dfd06c2f5f2297628a25fabab745b760
+        checksum/health: ab5d4b5eee36b97ed73e8db890b68825d482d4336f37f2061dff5bd3115c240e
+        checksum/scripts: c08a41aa5ad82555e0f294083374698b4d4771cb7808e1b871e3d8baf79fe387
+        checksum/secret: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    spec:
+      
+      securityContext:
+        fsGroup: 1001
+      serviceAccountName: RELEASE-NAME-sentry-redis
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: sentry-redis
+                    app.kubernetes.io/instance: RELEASE-NAME
+                    app.kubernetes.io/component: master
+                namespaces:
+                  - "default"
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: redis
+          image: docker.io/bitnami/redis:6.2.5-debian-10-r34
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            runAsUser: 1001
+          command:
+            - /bin/bash
+          args:
+            - -c
+            - /opt/bitnami/scripts/start-scripts/start-master.sh
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: REDIS_REPLICATION_MODE
+              value: master
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "yes"
+            - name: REDIS_TLS_ENABLED
+              value: "no"
+            - name: REDIS_PORT
+              value: "6379"
+          ports:
+            - name: redis
+              containerPort: 6379
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            # One second longer than command timeout should prevent generation of zombie processes.
+            timeoutSeconds: 6
+            successThreshold: 1
+            failureThreshold: 5
+            exec:
+              command:
+                - sh
+                - -c
+                - /health/ping_liveness_local.sh 5
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 5
+            exec:
+              command:
+                - sh
+                - -c
+                - /health/ping_readiness_local.sh 1
+          resources:
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: start-scripts
+              mountPath: /opt/bitnami/scripts/start-scripts
+            - name: health
+              mountPath: /health
+            - name: redis-data
+              mountPath: /data
+              subPath: 
+            - name: config
+              mountPath: /opt/bitnami/redis/mounted-etc
+            - name: redis-tmp-conf
+              mountPath: /opt/bitnami/redis/etc/
+            - name: tmp
+              mountPath: /tmp
+      volumes:
+        - name: start-scripts
+          configMap:
+            name: RELEASE-NAME-sentry-redis-scripts
+            defaultMode: 0755
+        - name: health
+          configMap:
+            name: RELEASE-NAME-sentry-redis-health
+            defaultMode: 0755
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-redis-configuration
+        - name: redis-tmp-conf
+          emptyDir: {}
+        - name: tmp
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+        labels:
+          app.kubernetes.io/name: sentry-redis
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/component: master
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"
+---
+# Source: sentry/charts/redis/templates/replicas/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-sentry-redis-replicas
+  namespace: "default"
+  labels:
+    app.kubernetes.io/name: sentry-redis
+    helm.sh/chart: redis-15.3.2
+    app.kubernetes.io/instance: RELEASE-NAME
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/component: replica
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: sentry-redis
+      app.kubernetes.io/instance: RELEASE-NAME
+      app.kubernetes.io/component: replica
+  serviceName: RELEASE-NAME-sentry-redis-headless
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: sentry-redis
+        helm.sh/chart: redis-15.3.2
+        app.kubernetes.io/instance: RELEASE-NAME
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/component: replica
+      annotations:
+        checksum/configmap: 8c068e2d09ef5fc4c17d22a54bd9d650dfd06c2f5f2297628a25fabab745b760
+        checksum/health: ab5d4b5eee36b97ed73e8db890b68825d482d4336f37f2061dff5bd3115c240e
+        checksum/scripts: c08a41aa5ad82555e0f294083374698b4d4771cb7808e1b871e3d8baf79fe387
+        checksum/secret: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+    spec:
+      
+      securityContext:
+        fsGroup: 1001
+      serviceAccountName: RELEASE-NAME-sentry-redis
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/name: sentry-redis
+                    app.kubernetes.io/instance: RELEASE-NAME
+                    app.kubernetes.io/component: replica
+                namespaces:
+                  - "default"
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      terminationGracePeriodSeconds: 30
+      containers:
+        - name: redis
+          image: docker.io/bitnami/redis:6.2.5-debian-10-r34
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            runAsUser: 1001
+          command:
+            - /bin/bash
+          args:
+            - -c
+            - /opt/bitnami/scripts/start-scripts/start-replica.sh
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: REDIS_REPLICATION_MODE
+              value: slave
+            - name: REDIS_MASTER_HOST
+              value: RELEASE-NAME-sentry-redis-master-0.RELEASE-NAME-sentry-redis-headless.default.svc.cluster.local
+            - name: REDIS_MASTER_PORT_NUMBER
+              value: "6379"
+            - name: ALLOW_EMPTY_PASSWORD
+              value: "yes"
+            - name: REDIS_TLS_ENABLED
+              value: "no"
+            - name: REDIS_PORT
+              value: "6379"
+          ports:
+            - name: redis
+              containerPort: 6379
+          livenessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 6
+            successThreshold: 1
+            failureThreshold: 5
+            exec:
+              command:
+                - sh
+                - -c
+                - /health/ping_liveness_local_and_master.sh 5
+          readinessProbe:
+            initialDelaySeconds: 20
+            periodSeconds: 5
+            timeoutSeconds: 2
+            successThreshold: 1
+            failureThreshold: 5
+            exec:
+              command:
+                - sh
+                - -c
+                - /health/ping_readiness_local_and_master.sh 1
+          resources:
+            limits: {}
+            requests: {}
+          volumeMounts:
+            - name: start-scripts
+              mountPath: /opt/bitnami/scripts/start-scripts
+            - name: health
+              mountPath: /health
+            - name: redis-data
+              mountPath: /data
+              subPath: 
+            - name: config
+              mountPath: /opt/bitnami/redis/mounted-etc
+            - name: redis-tmp-conf
+              mountPath: /opt/bitnami/redis/etc
+      volumes:
+        - name: start-scripts
+          configMap:
+            name: RELEASE-NAME-sentry-redis-scripts
+            defaultMode: 0755
+        - name: health
+          configMap:
+            name: RELEASE-NAME-sentry-redis-health
+            defaultMode: 0755
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-redis-configuration
+        - name: redis-tmp-conf
+          emptyDir: {}
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+        labels:
+          app.kubernetes.io/name: sentry-redis
+          app.kubernetes.io/instance: RELEASE-NAME
+          app.kubernetes.io/component: replica
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"
+---
+# Source: sentry/templates/cronjob-sentry-cleanup.yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: RELEASE-NAME-sentry-sentry-cleanup
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  schedule: "0 0 * * *"
+  concurrencyPolicy: "Allow"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            checksum/configYml: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+            checksum/sentryConfPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+            checksum/config.yaml: c764cfa0cb11e2afba1765a83a32238b818332623be1992ea8478d13fca92750
+          labels:
+            app: RELEASE-NAME-sentry
+            release: "RELEASE-NAME"
+        spec:
+          affinity:
+          containers:
+          - name: sentry-sentry-cleanup
+            image: "getsentry/sentry:21.8.0"
+            imagePullPolicy: IfNotPresent
+            command: ["sentry"]
+            args:
+              - "cleanup"
+              - "--days"
+              - "90"
+            env:
+            - name: SNUBA
+              value: http://RELEASE-NAME-sentry-snuba:1218
+            - name: C_FORCE_ROOT
+              value: "true"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: RELEASE-NAME-sentry-postgresql
+                  key: postgresql-password
+            volumeMounts:
+            - mountPath: /etc/sentry
+              name: config
+              readOnly: true
+            - mountPath: /var/lib/sentry/files
+              name: sentry-data
+            resources:
+              null
+          restartPolicy: Never
+          volumes:
+          - name: config
+            configMap:
+              name: RELEASE-NAME-sentry-sentry
+          - name: sentry-data
+            emptyDir: {}
+---
+# Source: sentry/templates/cronjob-snuba-cleanup-errors.yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: RELEASE-NAME-sentry-snuba-cleanup-errors
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: "Allow"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+            checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+          labels:
+            app: RELEASE-NAME-sentry
+            release: "RELEASE-NAME"
+        spec:
+          affinity:
+          containers:
+          - name: sentry-snuba-cleanup-errors
+            image: "getsentry/snuba:21.8.0"
+            imagePullPolicy: IfNotPresent
+            command:
+                - "snuba"
+                - "cleanup"
+                - "--storage"
+                - "errors"
+                - "--dry-run"
+                - "False"
+                - "--clickhouse-host"
+                - "RELEASE-NAME-clickhouse"
+                - "--clickhouse-port"
+                - "9000"
+            env:
+              - name: SNUBA_SETTINGS
+                value: /etc/snuba/settings.py
+            envFrom:
+                - secretRef:
+                      name: RELEASE-NAME-sentry-snuba-env
+            volumeMounts:
+                - mountPath: /etc/snuba
+                  name: config
+                  readOnly: true
+            resources:
+              null
+          restartPolicy: Never
+          volumes:
+            - name: config
+              configMap:
+                name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/cronjob-snuba-cleanup-transactions.yaml
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: RELEASE-NAME-sentry-snuba-cleanup-transactions
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+spec:
+  schedule: "0 * * * *"
+  concurrencyPolicy: "Allow"
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          annotations:
+            checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+            checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+          labels:
+            app: RELEASE-NAME-sentry
+            release: "RELEASE-NAME"
+        spec:
+          affinity:
+          containers:
+          - name: sentry-snuba-cleanup-errors
+            image: "getsentry/snuba:21.8.0"
+            imagePullPolicy: IfNotPresent
+            command:
+                - "snuba"
+                - "cleanup"
+                - "--storage"
+                - "transactions"
+                - "--dry-run"
+                - "False"
+                - "--clickhouse-host"
+                - "RELEASE-NAME-clickhouse"
+                - "--clickhouse-port"
+                - "9000"
+            env:
+              - name: SNUBA_SETTINGS
+                value: /etc/snuba/settings.py
+            envFrom:
+                - secretRef:
+                      name: RELEASE-NAME-sentry-snuba-env
+            volumeMounts:
+                - mountPath: /etc/snuba
+                  name: config
+                  readOnly: true
+            resources:
+              null
+          restartPolicy: Never
+          volumes:
+            - name: config
+              configMap:
+                name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/smtp_secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: RELEASE-NAME-sentry-smtp
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    vault.security.banzaicloud.io/vault-addr: "https://vault.internal.iclinic.tools"
+    vault.security.banzaicloud.io/vault-role: "core-shared-main-cluster-vault-secrets-webhook"
+    vault.security.banzaicloud.io/vault-path: "kubernetes-core-shared-main"
+    vault.security.banzaicloud.io/inline-mutation: "true"
+stringData:
+  SENTRY_EMAIL_PASSWORD: ${vault:secret/data/kubernetes/core/shared/main/sentry#mail_password}
+  SENTRY_EMAIL_HOST:     ${vault:secret/data/kubernetes/core/shared/main/sentry#mail_host}
+---
+# Source: sentry/templates/configmap-sentry.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: RELEASE-NAME-sentry-sentry
+  annotations:
+    helm.sh/hook: pre-install,pre-upgrade
+    vault.security.banzaicloud.io/vault-addr: "https://vault.internal.iclinic.tools"
+    vault.security.banzaicloud.io/vault-role: "core-shared-main-cluster-vault-secrets-webhook"
+    vault.security.banzaicloud.io/vault-path: "kubernetes-core-shared-main"
+    vault.security.banzaicloud.io/inline-mutation: "true"
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+data:
+  config.yml: |-
+    system.secret-key: "9YIj4bvC3nbN6k2J95ABIhFWd4keTFiaBD9a9GTxU894DTGLsQ"
+
+    # This URL will be used to tell Symbolicator where to obtain the Sentry source.
+    # See https://getsentry.github.io/symbolicator/api/
+    system.internal-url-prefix: 'http://RELEASE-NAME-sentry-web:9000'
+    symbolicator.enabled: false
+
+    ##########
+    # Github #
+    ##########
+    github-app.id: github-app.id: ${vault:secret/data/kubernetes/core/shared/main/sentry#github_appId}
+    github-app.name: ${vault:secret/data/kubernetes/core/shared/main/sentry#github_app_name}
+    github-app.private-key: |-
+    ${vault:secret/data/kubernetes/core/shared/main/sentry#github_privateKey}
+    github-app.webhook-secret: ${vault:secret/data/kubernetes/core/shared/main/sentry#github_webhook_secret}
+    github-app.client-id: ${vault:secret/data/kubernetes/core/shared/main/sentry#github_clientId}
+    github-app.client-secret: ${vault:secret/data/kubernetes/core/shared/main/sentry#github_client_secret}
+
+
+    ##########
+    # Google #
+    ##########
+
+    #########
+    # Slack #
+    #########
+    slack.client-id: ${vault:secret/data/kubernetes/core/shared/main/sentry#slack_clientId}
+    slack.client-secret: ${vault:secret/data/kubernetes/core/shared/main/sentry#slack_client_secret}
+    slack.signing-secret: ${vault:secret/data/kubernetes/core/shared/main/sentry#slack_signing_secret}
+
+
+    #########
+    # Redis #
+    #########
+    redis.clusters:
+      default:
+        hosts:
+          0:
+            host: "RELEASE-NAME-sentry-redis-master"
+            port: 6379
+            password: ""
+
+    ################
+    # File storage #
+    ################
+    # Uploaded media uses these `filestore` settings. The available
+    # backends are either `filesystem` or `s3`.
+    filestore.backend: "filesystem"
+    filestore.options:
+      location: "/var/lib/sentry/files"
+    
+  sentry.conf.py: |-
+    from sentry.conf.server import *  # NOQA
+    from distutils.util import strtobool
+
+    DATABASES = {
+        "default": {
+            "ENGINE": "sentry.db.postgres",
+            "NAME": "sentry",
+            "USER": "postgres",
+            "PASSWORD": os.environ.get("POSTGRES_PASSWORD", ""),
+            "HOST": "RELEASE-NAME-sentry-postgresql",
+            "PORT": 5432,
+        }
+    }
+
+    # You should not change this setting after your database has been created
+    # unless you have altered all schemas first
+    SENTRY_USE_BIG_INTS = True
+
+    ###########
+    # General #
+    ###########
+
+    # Instruct Sentry that this install intends to be run by a single organization
+    # and thus various UI optimizations should be enabled.
+    SENTRY_SINGLE_ORGANIZATION = True
+
+    SENTRY_OPTIONS["system.event-retention-days"] = int(env('SENTRY_EVENT_RETENTION_DAYS') or "90")
+
+    #########
+    # Queue #
+    #########
+
+    # See https://docs.getsentry.com/on-premise/server/queue/ for more
+    # information on configuring your queue broker and workers. Sentry relies
+    # on a Python framework called Celery to manage queues.
+    BROKER_URL = os.environ.get("BROKER_URL", "amqp://guest:guest@RELEASE-NAME-rabbitmq:5672//")
+
+    #########
+    # Cache #
+    #########
+
+    # Sentry currently utilizes two separate mechanisms. While CACHES is not a
+    # requirement, it will optimize several high throughput patterns.
+
+    # CACHES = {
+    #     "default": {
+    #         "BACKEND": "django.core.cache.backends.memcached.MemcachedCache",
+    #         "LOCATION": ["memcached:11211"],
+    #         "TIMEOUT": 3600,
+    #     }
+    # }
+
+    # A primary cache is required for things such as processing events
+    SENTRY_CACHE = "sentry.cache.redis.RedisCache"
+
+    DEFAULT_KAFKA_OPTIONS = {
+        "bootstrap.servers": "RELEASE-NAME-kafka:9092",
+        "message.max.bytes": 50000000,
+        "socket.timeout.ms": 1000,
+    }
+
+    SENTRY_EVENTSTREAM = "sentry.eventstream.kafka.KafkaEventStream"
+    SENTRY_EVENTSTREAM_OPTIONS = {"producer_configuration": DEFAULT_KAFKA_OPTIONS}
+
+    KAFKA_CLUSTERS["default"] = DEFAULT_KAFKA_OPTIONS
+
+    ###############
+    # Rate Limits #
+    ###############
+
+    # Rate limits apply to notification handlers and are enforced per-project
+    # automatically.
+
+    SENTRY_RATELIMITER = "sentry.ratelimits.redis.RedisRateLimiter"
+
+    ##################
+    # Update Buffers #
+    ##################
+
+    # Buffers (combined with queueing) act as an intermediate layer between the
+    # database and the storage API. They will greatly improve efficiency on large
+    # numbers of the same events being sent to the API in a short amount of time.
+    # (read: if you send any kind of real data to Sentry, you should enable buffers)
+
+    SENTRY_BUFFER = "sentry.buffer.redis.RedisBuffer"
+
+    ##########
+    # Quotas #
+    ##########
+
+    # Quotas allow you to rate limit individual projects or the Sentry install as
+    # a whole.
+
+    SENTRY_QUOTAS = "sentry.quotas.redis.RedisQuota"
+
+    ########
+    # TSDB #
+    ########
+
+    # The TSDB is used for building charts as well as making things like per-rate
+    # alerts possible.
+
+    SENTRY_TSDB = "sentry.tsdb.redissnuba.RedisSnubaTSDB"
+
+    #########
+    # SNUBA #
+    #########
+
+    SENTRY_SEARCH = "sentry.search.snuba.EventsDatasetSnubaSearchBackend"
+    SENTRY_SEARCH_OPTIONS = {}
+    SENTRY_TAGSTORE_OPTIONS = {}
+
+    ###########
+    # Digests #
+    ###########
+
+    # The digest backend powers notification summaries.
+
+    SENTRY_DIGESTS = "sentry.digests.backends.redis.RedisBackend"
+
+    ##############
+    # Web Server #
+    ##############
+
+    SENTRY_WEB_HOST = "0.0.0.0"
+    SENTRY_WEB_PORT = 9000
+    SENTRY_PUBLIC = False
+    SENTRY_WEB_OPTIONS = {
+        "http": "%s:%s" % (SENTRY_WEB_HOST, SENTRY_WEB_PORT),
+        "protocol": "uwsgi",
+        # This is needed to prevent https://git.io/fj7Lw
+        "uwsgi-socket": None,
+
+        # These ase for proper HTTP/1.1 support from uWSGI
+        # Without these it doesn't do keep-alives causing
+        # issues with Relay's direct requests.
+        "http-keepalive": True,
+        "http-chunked-input": True,
+        # the number of web workers
+        'workers': 3,
+        # Turn off memory reporting
+        "memory-report": False,
+        # Some stuff so uwsgi will cycle workers sensibly
+        'max-requests': 100000,
+        'max-requests-delta': 500,
+        'max-worker-lifetime': 86400,
+        # Duplicate options from sentry default just so we don't get
+        # bit by sentry changing a default value that we depend on.
+        'thunder-lock': True,
+        'log-x-forwarded-for': False,
+        'buffer-size': 32768,
+        'limit-post': 209715200,
+        'disable-logging': True,
+        'reload-on-rss': 600,
+        'ignore-sigpipe': True,
+        'ignore-write-errors': True,
+        'disable-write-exception': True,
+    }
+
+    ###########
+    # SSL/TLS #
+    ###########
+
+    # If you're using a reverse SSL proxy, you should enable the X-Forwarded-Proto
+    # header and enable the settings below
+
+    # SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    # SESSION_COOKIE_SECURE = True
+    # CSRF_COOKIE_SECURE = True
+    # SOCIAL_AUTH_REDIRECT_IS_HTTPS = True
+
+    # End of SSL/TLS settings
+
+    ############
+    # Features #
+    ############
+
+
+    SENTRY_FEATURES = {
+      "auth:register": True
+    }
+    SENTRY_FEATURES["projects:sample-events"] = False
+    SENTRY_FEATURES.update(
+        {
+            feature: True
+            for feature in ("organizations:advanced-search",
+                "organizations:android-mappings",
+                "organizations:api-keys",
+                "organizations:boolean-search",
+                "organizations:related-events",
+                "organizations:alert-filters",
+                "organizations:custom-symbol-sources",
+                "organizations:dashboards-basic",
+                "organizations:dashboards-edit",
+                "organizations:data-forwarding",
+                "organizations:discover",
+                "organizations:discover-basic",
+                "organizations:discover-query",
+                "organizations:enterprise-perf",
+                "organizations:event-attachments",
+                "organizations:events",
+                "organizations:global-views",
+                "organizations:incidents",
+                "organizations:metric-alert-builder-aggregate",
+                "organizations:metric-alert-gui-filters",
+                "organizations:integrations-event-hooks",
+                "organizations:integrations-issue-basic",
+                "organizations:integrations-issue-sync",
+                "organizations:integrations-alert-rule",
+                "organizations:integrations-chat-unfurl",
+                "organizations:integrations-incident-management",
+                "organizations:integrations-ticket-rules",
+                "organizations:integrations-vsts-limited-scopes",
+                "organizations:integrations-stacktrace-link",
+                "organizations:internal-catchall",
+                "organizations:invite-members",
+                "organizations:large-debug-files",
+                "organizations:monitors",
+                "organizations:onboarding",
+                "organizations:org-saved-searches",
+                "organizations:performance-view",
+                "organizations:project-detail",
+                "organizations:relay",
+                "organizations:release-performance-views",
+                "organizations:rule-page",
+                "organizations:set-grouping-config",
+                "organizations:custom-event-title",
+                "organizations:slack-migration",
+                "organizations:sso-basic",
+                "organizations:sso-rippling",
+                "organizations:sso-saml2",
+                "organizations:sso-migration",
+                "organizations:stacktrace-hover-preview",
+                "organizations:symbol-sources",
+                "organizations:transaction-comparison",
+                "organizations:usage-stats-graph",
+                "organizations:inbox",
+                "organizations:unhandled-issue-flag",
+                "organizations:invite-members-rate-limits",
+                "organizations:dashboards-v2",
+
+                "projects:alert-filters",
+                "projects:custom-inbound-filters",
+                "projects:data-forwarding",
+                "projects:discard-groups",
+                "projects:issue-alerts-targeting",
+                "projects:minidump",
+                "projects:rate-limits",
+                "projects:sample-events",
+                "projects:servicehooks",
+                "projects:similarity-view",
+                "projects:similarity-indexing",
+                "projects:similarity-view-v2",
+                "projects:similarity-indexing-v2",
+                "projects:reprocessing-v2",
+
+                "projects:plugins",
+            )
+        }
+    )
+
+    #######################
+    # Email Configuration #
+    #######################
+    SENTRY_OPTIONS['mail.backend'] = os.getenv("SENTRY_EMAIL_BACKEND", "dummy")
+    SENTRY_OPTIONS['mail.use-tls'] = bool(strtobool(os.getenv("SENTRY_EMAIL_USE_TLS", "false")))
+    SENTRY_OPTIONS['mail.use-ssl'] = bool(strtobool(os.getenv("SENTRY_EMAIL_USE_SSL", "false")))
+    SENTRY_OPTIONS['mail.username'] = os.getenv("SENTRY_EMAIL_USERNAME", "")
+    SENTRY_OPTIONS['mail.password'] = os.getenv("SENTRY_EMAIL_PASSWORD", "")
+    SENTRY_OPTIONS['mail.port'] = int(os.getenv("SENTRY_EMAIL_PORT", "25"))
+    SENTRY_OPTIONS['mail.host'] = os.getenv("SENTRY_EMAIL_HOST", "")
+    SENTRY_OPTIONS['mail.from'] = os.getenv("SENTRY_EMAIL_FROM", "")
+
+    #########################
+    # Bitbucket Integration #
+    ########################
+
+    # BITBUCKET_CONSUMER_KEY = 'YOUR_BITBUCKET_CONSUMER_KEY'
+    # BITBUCKET_CONSUMER_SECRET = 'YOUR_BITBUCKET_CONSUMER_SECRET'
+
+    #########
+    # Relay #
+    #########
+    SENTRY_RELAY_WHITELIST_PK = []
+    SENTRY_RELAY_OPEN_REGISTRATION = True
+
+    # No Python Extension Config Given
+---
+# Source: sentry/templates/deployment-relay.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-relay
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "25"
+spec:
+  selector:
+    matchLabels:
+      app: RELEASE-NAME-sentry
+      release: "RELEASE-NAME"
+      role: relay
+  replicas: 1
+  revisionHistoryLimit: 10
+  template:
+    metadata:
+      annotations:
+        checksum/relay: 8074a66c015a8309dc9bdef7524b89bb223749847663f454012dba4e7ed06cc3
+        checksum/config.yaml: 89f4c0ba59cfa094143be1e7f19b5523021ac017295d48e13ed3a03434d1ac5a
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: relay
+    spec:
+      affinity:
+      initContainers:
+        - name: sentry-relay-init
+          image: "getsentry/relay:21.8.0"
+          imagePullPolicy: IfNotPresent
+          args:
+            - "credentials"
+            - "generate"
+          env:
+            - name: RELAY_PORT
+              value: '3000'
+          volumeMounts:
+            - name: credentials
+              mountPath: /work/.relay
+            - name: config
+              mountPath: /work/.relay/config.yml
+              subPath: config.yml
+              readOnly: true
+      containers:
+      - name: sentry-relay
+        image: "getsentry/relay:21.8.0"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3000
+        env:
+        - name: RELAY_PORT
+          value: '3000'
+        volumeMounts:
+          - name: credentials
+            mountPath: /work/.relay
+          - name: config
+            mountPath: /work/.relay/config.yml
+            subPath: config.yml
+            readOnly: true
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /api/relay/healthcheck/ready/
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        readinessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /api/relay/healthcheck/ready/
+            port: 3000
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 2
+        resources:
+            {}
+      volumes:
+      - name: config
+        configMap:
+          name: RELEASE-NAME-sentry-relay
+          defaultMode: 0644
+      - name: credentials
+        emptyDir: {}
+---
+# Source: sentry/templates/deployment-sentry-ingest-consumer.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-ingest-consumer
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "10"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: RELEASE-NAME-sentry
+      release: "RELEASE-NAME"
+      role: ingest-consumer
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/configYml: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+        checksum/sentryConfPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: 51054f5b3745aca253b34913714536ec2c27a432b487a3fc78e1117aab4527b5
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: ingest-consumer
+    spec:
+      affinity:
+      containers:
+      - name: sentry-ingest-consumer
+        image: "getsentry/sentry:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command: ["sentry"]
+        args:
+          - "run"
+          - "ingest-consumer"
+          - "--all-consumer-types"
+        env:
+        - name: SNUBA
+          value: http://RELEASE-NAME-sentry-snuba:1218
+        - name: C_FORCE_ROOT
+          value: "true"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-postgresql
+              key: postgresql-password
+        
+        volumeMounts:
+        - mountPath: /etc/sentry
+          name: config
+          readOnly: true
+        - mountPath: /var/lib/sentry/files
+          name: sentry-data
+        resources:
+            {}
+      volumes:
+      - name: config
+        configMap:
+          name: RELEASE-NAME-sentry-sentry
+      - name: sentry-data
+        emptyDir: {}
+---
+# Source: sentry/templates/deployment-sentry-post-process-forwarder.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-post-process-forward
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "10"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: sentry
+        release: "RELEASE-NAME"
+        role: sentry-post-process-forward
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/configYml: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+        checksum/sentryConfPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: b6f1c7e805f6ed9f229ba47222c5fbac465159ebebca5c7157293b15e9599347
+      labels:
+        app: sentry
+        release: "RELEASE-NAME"
+        role: sentry-post-process-forward
+    spec:
+      affinity:
+      containers:
+      - name: sentry-post-process-forward
+        image: "getsentry/sentry:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command: ["sentry", "run", "post-process-forwarder", "--commit-batch-size", "1"]
+        env:
+        - name: SNUBA
+          value: http://RELEASE-NAME-sentry-snuba:1218
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-postgresql
+              key: postgresql-password
+        
+        volumeMounts:
+        - mountPath: /etc/sentry
+          name: config
+          readOnly: true
+        - mountPath: /var/lib/sentry/files
+          name: sentry-data
+        resources:
+            {}
+      volumes:
+      - name: config
+        configMap:
+          name: RELEASE-NAME-sentry-sentry
+      - name: sentry-data
+        emptyDir: {}
+---
+# Source: sentry/templates/deployment-sentry-subscription-consumer-events.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-subscription-consumer-events
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "10"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: sentry
+        release: "RELEASE-NAME"
+        role: sentry-subscription-consumer-events
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/configYml: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+        checksum/sentryConfPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: 5c28eeba50092c84559445f91b8d8ad0a87b46a3492088f81bb13b9fd0510afa
+      labels:
+        app: sentry
+        release: "RELEASE-NAME"
+        role: sentry-subscription-consumer-events
+    spec:
+      affinity:
+      containers:
+      - name: sentry-subscription-consumer-events
+        image: "getsentry/sentry:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command: ["sentry"]
+        args:
+          - "run"
+          - "query-subscription-consumer"
+          - "--topic"
+          - "events-subscription-results"
+          - "--commit-batch-size"
+          - "1"
+        env:
+        - name: SNUBA
+          value: http://RELEASE-NAME-sentry-snuba:1218
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-postgresql
+              key: postgresql-password
+        
+        volumeMounts:
+        - mountPath: /etc/sentry
+          name: config
+          readOnly: true
+        - mountPath: /var/lib/sentry/files
+          name: sentry-data
+        resources:
+            {}
+      volumes:
+      - name: config
+        configMap:
+          name: RELEASE-NAME-sentry-sentry
+      - name: sentry-data
+        emptyDir: {}
+---
+# Source: sentry/templates/deployment-sentry-subscription-consumer-transactions.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-subscription-consumer-transactions
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "10"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: sentry
+        release: "RELEASE-NAME"
+        role: sentry-subscription-consumer-transactions
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/configYml: 44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a
+        checksum/sentryConfPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: 4e9c9ddb6a41ecbb6e00edb60118bb7d46b44871e742d96871565d37d1cd503a
+      labels:
+        app: sentry
+        release: "RELEASE-NAME"
+        role: sentry-subscription-consumer-transactions
+    spec:
+      affinity:
+      containers:
+      - name: sentry-subscription-consumer-transactions
+        image: "getsentry/sentry:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command: ["sentry"]
+        args:
+          - "run"
+          - "query-subscription-consumer"
+          - "--topic"
+          - "transactions-subscription-results"
+          - "--commit-batch-size"
+          - "1"
+        env:
+        - name: SNUBA
+          value: http://RELEASE-NAME-sentry-snuba:1218
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-postgresql
+              key: postgresql-password
+        
+        volumeMounts:
+        - mountPath: /etc/sentry
+          name: config
+          readOnly: true
+        - mountPath: /var/lib/sentry/files
+          name: sentry-data
+        resources:
+            {}
+      volumes:
+      - name: config
+        configMap:
+          name: RELEASE-NAME-sentry-sentry
+      - name: sentry-data
+        emptyDir: {}
+---
+# Source: sentry/templates/deployment-snuba-consumer.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-snuba-consumer
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "10"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-consumer
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-consumer
+    spec:
+      affinity:
+      containers:
+      - name: sentry-snuba
+        image: "getsentry/snuba:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command:
+          - "snuba"
+          - "consumer"
+          - "--storage"
+          - "errors"
+          - "--auto-offset-reset"
+          - "earliest"
+          - "--max-batch-time-ms"
+          - "750"
+        ports:
+        - containerPort: 1218
+        env:
+        - name: SNUBA_SETTINGS
+          value: /etc/snuba/settings.py
+        - name: DEFAULT_BROKERS
+          value: "RELEASE-NAME-kafka:9092"
+        envFrom:
+        - secretRef:
+            name: RELEASE-NAME-sentry-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        resources:
+            {}
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/deployment-snuba-outcomes-consumer.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-snuba-outcomes-consumer
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "17"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-outcomes-consumer
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-outcomes-consumer
+    spec:
+      affinity:
+      containers:
+      - name: sentry-snuba
+        image: "getsentry/snuba:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command:
+          - "snuba"
+          - "consumer"
+          - "--storage"
+          - "outcomes_raw"
+          - "--auto-offset-reset"
+          - "earliest"
+          - "--max-batch-size"
+          - "3"
+        ports:
+        - containerPort: 1218
+        env:
+        - name: SNUBA_SETTINGS
+          value: /etc/snuba/settings.py
+        - name: DEFAULT_BROKERS
+          value: "RELEASE-NAME-kafka:9092"
+        envFrom:
+        - secretRef:
+            name: RELEASE-NAME-sentry-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        resources:
+            {}
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/deployment-snuba-replacer.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-snuba-replacer
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "18"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-replacer
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-replacer
+    spec:
+      affinity:
+      containers:
+      - name: sentry-snuba
+        image: "getsentry/snuba:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command:
+          - "snuba"
+          - "replacer"
+          - "--storage"
+          - "errors"
+          - "--auto-offset-reset"
+          - "earliest"
+          - "--max-batch-size"
+          - "3"
+        ports:
+        - containerPort: 1218
+        env:
+        - name: SNUBA_SETTINGS
+          value: /etc/snuba/settings.py
+        - name: DEFAULT_BROKERS
+          value: "RELEASE-NAME-kafka:9092"
+        envFrom:
+        - secretRef:
+            name: RELEASE-NAME-sentry-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        resources:
+            {}
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/deployment-snuba-sessions-consumer.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-sessions-consumer
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "16"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: sessions-consumer
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: sessions-consumer
+    spec:
+      affinity:
+      containers:
+      - name: sentry-snuba
+        image: "getsentry/snuba:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command:
+          - "snuba"
+          - "consumer"
+          - "--storage"
+          - "sessions_raw"
+          - "--auto-offset-reset"
+          - "earliest"
+          - "--max-batch-time-ms"
+          - "750"
+        ports:
+        - containerPort: 1218
+        env:
+        - name: SNUBA_SETTINGS
+          value: /etc/snuba/settings.py
+        - name: DEFAULT_BROKERS
+          value: "RELEASE-NAME-kafka:9092"
+        envFrom:
+        - secretRef:
+            name: RELEASE-NAME-sentry-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        resources:
+            {}
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/deployment-snuba-subscription-consumer-events.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-snuba-subscription-consumer-events
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "18"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-subscription-consumer-events
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-subscription-consumer-events
+    spec:
+      affinity:
+      containers:
+      - name: sentry-snuba
+        image: "getsentry/snuba:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command:
+          - "snuba"
+          - "subscriptions"
+          - "--partitions=1"
+          - "--auto-offset-reset"
+          - "earliest"
+          - "--consumer-group=snuba-events-subscriptions-consumers"
+          - "--topic=events"
+          - "--result-topic=events-subscription-results"
+          - "--dataset=events"
+          - "--commit-log-topic=snuba-commit-log"
+          - "--commit-log-group=snuba-consumers"
+          - "--delay-seconds=60"
+          - "--schedule-ttl=60"
+        ports:
+        - containerPort: 1218
+        env:
+        - name: SNUBA_SETTINGS
+          value: /etc/snuba/settings.py
+        - name: DEFAULT_BROKERS
+          value: "RELEASE-NAME-kafka:9092"
+        envFrom:
+        - secretRef:
+            name: RELEASE-NAME-sentry-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        resources:
+            {}
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/deployment-snuba-subscription-consumer-transactions.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-snuba-subscription-consumer-transactions
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "18"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-subscription-consumer-transactions
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-subscription-consumer-transactions
+    spec:
+      affinity:
+      containers:
+      - name: sentry-snuba
+        image: "getsentry/snuba:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command:
+          - "snuba"
+          - "subscriptions"
+          - "--auto-offset-reset"
+          - "earliest"
+          - "--consumer-group=snuba-transactions-subscriptions-consumers"
+          - "--topic=events"
+          - "--result-topic=transactions-subscription-results"
+          - "--dataset=transactions"
+          - "--commit-log-topic=snuba-commit-log"
+          - "--commit-log-group=snuba-transactions-consumers"
+          - "--delay-seconds=60"
+          - "--schedule-ttl=60"
+        ports:
+        - containerPort: 1218
+        env:
+        - name: SNUBA_SETTINGS
+          value: /etc/snuba/settings.py
+        - name: DEFAULT_BROKERS
+          value: "RELEASE-NAME-kafka:9092"
+        envFrom:
+        - secretRef:
+            name: RELEASE-NAME-sentry-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        resources:
+            {}
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/deployment-snuba-transactions-consumer.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: RELEASE-NAME-sentry-snuba-transactions-consumer
+  labels:
+    app: RELEASE-NAME-sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+    app.kubernetes.io/managed-by: "Helm"
+  annotations:
+    meta.helm.sh/release-name: "RELEASE-NAME"
+    meta.helm.sh/release-namespace: "default"
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-weight": "12"
+spec:
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-transactions-consumer
+  replicas: 1
+  template:
+    metadata:
+      annotations:
+        checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+      labels:
+        app: RELEASE-NAME-sentry
+        release: "RELEASE-NAME"
+        role: snuba-transactions-consumer
+    spec:
+      affinity:
+      containers:
+      - name: sentry-snuba
+        image: "getsentry/snuba:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command:
+          - "snuba"
+          - "consumer"
+          - "--storage"
+          - "transactions"
+          - "--consumer-group"
+          - "transactions_group"
+          - "--auto-offset-reset"
+          - "earliest"
+          - "--max-batch-time-ms"
+          - "750"
+        ports:
+        - containerPort: 1218
+        env:
+        - name: SNUBA_SETTINGS
+          value: /etc/snuba/settings.py
+        - name: DEFAULT_BROKERS
+          value: "RELEASE-NAME-kafka:9092"
+        envFrom:
+        - secretRef:
+            name: RELEASE-NAME-sentry-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        resources:
+            {}
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/hooks/clickhouse-init.job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: RELEASE-NAME-sentry-clickhouse-init
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "hook-succeeded,before-hook-creation"
+    "helm.sh/hook-weight": "6"
+spec:
+  template:
+    metadata:
+      name: RELEASE-NAME-sentry-clickhouse-init
+      annotations:
+      labels:
+        app: sentry
+        release: "RELEASE-NAME"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: clickhouse-init
+        image: "yandex/clickhouse-server:20.8.9.6"
+        command:
+          - /bin/bash
+          - -ec
+          - |-
+            check_readiness() {
+              local host="$1"
+              local port="$2"
+              local count="$3"
+              until [ $count -le 0 ] || clickhouse-client --database=default --host=$host --port=$port --query="SELECT 1;" > /dev/null;
+              do
+                echo "Waiting for clickhouse to be ready..."
+                count="$((count-1))"
+                sleep 1
+              done
+            };
+            echo "clickhouse-init started"
+
+            for tbl in discover errors groupassignee groupedmessage outcomes_hourly migrations outcomes_mv_hourly outcomes_raw sentry sessions_hourly sessions_hourly_mv sessions_raw transactions; do
+              for ((i=0;i<3;i++)); do
+                check_readiness "RELEASE-NAME-clickhouse-$i.RELEASE-NAME-clickhouse-headless" "9000" "5";
+
+                clickhouse-client --user default --password "" --database=default --host=RELEASE-NAME-clickhouse-$i.RELEASE-NAME-clickhouse-headless --port=9000 --query="DROP TABLE IF EXISTS ${tbl}_dist";
+                clickhouse-client --user default --password "" --database=default --host=RELEASE-NAME-clickhouse-$i.RELEASE-NAME-clickhouse-headless --port=9000 --query="CREATE TABLE ${tbl}_dist AS ${tbl}_local ENGINE = Distributed('RELEASE-NAME-clickhouse', 'default', ${tbl}_local, rand())";
+              done
+            done
+
+            echo "clickhouse-init finished"
+---
+# Source: sentry/templates/hooks/sentry-db-check.job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: RELEASE-NAME-sentry-db-check
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "hook-succeeded,before-hook-creation"
+    "helm.sh/hook-weight": "-1"
+spec:
+  template:
+    metadata:
+      name: RELEASE-NAME-sentry-db-check
+      annotations:
+      labels:
+        app: sentry
+        release: "RELEASE-NAME"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: db-check
+        image: subfuzion/netcat:latest
+        imagePullPolicy: IfNotPresent
+        command:
+          - /bin/sh
+          - -c
+          - |
+            echo "Checking if clickhouse is up"
+            CLICKHOUSE_STATUS=0
+            while [ $CLICKHOUSE_STATUS -eq 0 ]; do
+              CLICKHOUSE_STATUS=1
+              CLICKHOUSE_REPLICAS=3
+              i=0; while [ $i -lt $CLICKHOUSE_REPLICAS ]; do
+                CLICKHOUSE_HOST=RELEASE-NAME-clickhouse-$i.RELEASE-NAME-clickhouse-headless
+                if ! nc -z "$CLICKHOUSE_HOST" 9000; then
+                  CLICKHOUSE_STATUS=0
+                  echo "$CLICKHOUSE_HOST is not available yet"
+                fi
+                i=$((i+1))
+              done
+              if [ "$CLICKHOUSE_STATUS" -eq 0 ]; then
+                echo "Clickhouse not ready. Sleeping for 10s before trying again"
+                sleep 10;
+              fi
+            done
+            echo "Clickhouse is up"
+
+            echo "Checking if kafka is up"
+            KAFKA_STATUS=0
+            while [ $KAFKA_STATUS -eq 0 ]; do
+              KAFKA_STATUS=1
+              KAFKA_REPLICAS=3
+              i=0; while [ $i -lt $KAFKA_REPLICAS ]; do
+                KAFKA_HOST=RELEASE-NAME-kafka-$i.RELEASE-NAME-kafka-headless
+                if ! nc -z "$KAFKA_HOST" 9092; then
+                  KAFKA_STATUS=0
+                  echo "$KAFKA_HOST is not available yet"
+                fi
+                i=$((i+1))
+              done
+              if [ "$KAFKA_STATUS" -eq 0 ]; then
+                echo "Kafka not ready. Sleeping for 10s before trying again"
+                sleep 10;
+              fi
+            done
+            echo "Kafka is up"
+        env:
+        resources:
+          limits:
+            memory: 64Mi
+          requests:
+            cpu: 100m
+            memory: 64Mi
+---
+# Source: sentry/templates/hooks/sentry-db-init.job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: RELEASE-NAME-sentry-db-init
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "hook-succeeded,before-hook-creation"
+    "helm.sh/hook-weight": "6"
+spec:
+  template:
+    metadata:
+      name: RELEASE-NAME-sentry-db-init
+      annotations:
+        checksum/configmap.yaml: 0be672f86b95c643331a8c8b61e59d9326903ae9f2635c13d88ece4fe545b503
+      labels:
+        app: sentry
+        release: "RELEASE-NAME"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: db-init-job
+        image: "getsentry/sentry:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command: ["sentry","upgrade","--noinput"]
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-postgresql
+              key: postgresql-password
+        volumeMounts:
+        - mountPath: /etc/sentry
+          name: config
+          readOnly: true
+        resources:
+          limits:
+            memory: 2048Mi
+          requests:
+            cpu: 300m
+            memory: 2048Mi
+      volumes:
+      - name: config
+        configMap:
+          name: RELEASE-NAME-sentry-sentry
+---
+# Source: sentry/templates/hooks/snuba-db-init.job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: RELEASE-NAME-sentry-snuba-db-init
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "hook-succeeded,before-hook-creation"
+    "helm.sh/hook-weight": "3"
+spec:
+  template:
+    metadata:
+      name: RELEASE-NAME-sentry-snuba-db-init
+      annotations:
+        checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+      labels:
+        app: sentry
+        release: "RELEASE-NAME"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: snuba-init
+        image: "getsentry/snuba:21.8.0"
+        command:
+          - /bin/bash
+          - -ec
+          - >-
+            for ((i=0;i<3;i++)); do
+              export CLICKHOUSE_HOST=RELEASE-NAME-clickhouse-$i.RELEASE-NAME-clickhouse-headless;
+              snuba bootstrap --force;
+            done
+        env:
+        - name: LOG_LEVEL
+          value: debug
+        - name: CLICKHOUSE_SINGLE_NODE
+          value: "true"
+        - name: SNUBA_SETTINGS
+          value: /etc/snuba/settings.py
+        - name: DEFAULT_BROKERS
+          value: "RELEASE-NAME-kafka:9092"
+        envFrom:
+        - secretRef:
+            name: RELEASE-NAME-sentry-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 1Gi
+          requests:
+            cpu: 700m
+            memory: 1Gi
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/hooks/snuba-migrate.job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: RELEASE-NAME-sentry-snuba-migrate
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "hook-succeeded,before-hook-creation"
+    "helm.sh/hook-weight": "5"
+spec:
+  template:
+    metadata:
+      name: RELEASE-NAME-sentry-snuba-migrate
+      annotations:
+        checksum/snubaSettingsPy: d5f85a6a8afbc55eebe23801e1a51a0fb4c0428c9a73ef6708d8dc83e079cd49
+        checksum/config.yaml: e6a0c354aabcab63294e1d74d899802fb9c9d122bb8af1cce01c23343c05bde4
+      labels:
+        app: sentry
+        release: "RELEASE-NAME"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: snuba-migrate
+        image: "getsentry/snuba:21.8.0"
+        command:
+          - /bin/bash
+          - -ec
+          - >-
+            for ((i=0;i<3;i++)); do
+              export CLICKHOUSE_HOST=RELEASE-NAME-clickhouse-$i.RELEASE-NAME-clickhouse-headless;
+              snuba migrations migrate --force;
+            done
+        env:
+        - name: LOG_LEVEL
+          value: debug
+        - name: CLICKHOUSE_SINGLE_NODE
+          value: "true"
+        - name: SNUBA_SETTINGS
+          value: /etc/snuba/settings.py
+        - name: DEFAULT_BROKERS
+          value: "RELEASE-NAME-kafka:9092"
+        envFrom:
+        - secretRef:
+            name: RELEASE-NAME-sentry-snuba-env
+        volumeMounts:
+        - mountPath: /etc/snuba
+          name: config
+          readOnly: true
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 1Gi
+          requests:
+            cpu: 700m
+            memory: 1Gi
+      volumes:
+        - name: config
+          configMap:
+            name: RELEASE-NAME-sentry-snuba
+---
+# Source: sentry/templates/hooks/user-create.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: RELEASE-NAME-sentry-user-create
+  labels:
+    app: sentry
+    chart: "sentry-13.1.0"
+    release: "RELEASE-NAME"
+    heritage: "Helm"
+  annotations:
+    "helm.sh/hook": "post-install,post-upgrade"
+    "helm.sh/hook-delete-policy": "hook-succeeded,before-hook-creation"
+    "helm.sh/hook-weight": "9"
+spec:
+  template:
+    metadata:
+      name: RELEASE-NAME-sentry-user-create
+      annotations:
+        checksum/configmap.yaml: 7d511038c0fcbe655e72c2e572b83039499c2fcccfd8ddb56da9f45abe8ebcb3
+        checksum/smtp_secret.yaml: ccae3bdc1fcdfc5564cd0231ed29a0978cef557375279c350440ca6186c3e4fa
+      labels:
+        app: sentry
+        release: "RELEASE-NAME"
+    spec:
+      restartPolicy: Never
+      containers:
+      - name: user-create-job
+        image: "getsentry/sentry:21.8.0"
+        imagePullPolicy: IfNotPresent
+        command: ["/bin/bash", "-c"]
+        # Create user but do not exit 1 when user already exists (exit code 3 from createuser command)
+        # https://docs.sentry.io/server/cli/createuser/
+        args:
+          - >
+            sentry createuser \
+              --no-input \
+              --superuser \
+              --email "admin@sentry.local" \
+              --password "aaaa" || true; \
+            if [ $? -eq 0 ] || [ $? -eq 3 ]; then \
+              exit 0; \
+            else \
+              exit 1; \
+            fi
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: RELEASE-NAME-sentry-postgresql
+              key: postgresql-password
+        volumeMounts:
+        - mountPath: /etc/sentry
+          name: config
+          readOnly: true
+        resources:
+          limits:
+            memory: 2048Mi
+          requests:
+            cpu: 300m
+            memory: 2048Mi
+      volumes:
+      - name: config
+        configMap:
+          name: RELEASE-NAME-sentry-sentry
