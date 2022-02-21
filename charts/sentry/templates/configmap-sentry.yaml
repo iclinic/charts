@@ -7,10 +7,12 @@ metadata:
   name: {{ template "sentry.fullname" . }}-sentry
   annotations:
     helm.sh/hook: pre-install,pre-upgrade
-    vault.security.banzaicloud.io/vault-addr: "https://vault.internal.iclinic.tools"
-    vault.security.banzaicloud.io/vault-role: "core-shared-main-cluster-vault-secrets-webhook"
-    vault.security.banzaicloud.io/vault-path: "kubernetes-core-shared-main"
-    vault.security.banzaicloud.io/inline-mutation: "true"
+    {{- if .Values.vault.vaultaddr }}
+    vault.security.banzaicloud.io/vault-addr: {{ .Values.vault.vaultAddr | quote }}
+    vault.security.banzaicloud.io/vault-role: {{ .Values.vault.vaultRole | quote }}
+    vault.security.banzaicloud.io/vault-path: {{ .Values.vault.vaultPath | quote }}
+    vault.security.banzaicloud.io/inline-mutation:  {{ .Values.vault.inlineMutation | quote }}
+    {{- end }}
   labels:
     app: sentry
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"

@@ -211,6 +211,12 @@ sentry:
     sidecars: []
     volumes: []
 
+vault: {}
+#vaultAddr:
+#vaultRole:
+#vaultPath:
+#inlineMutation:
+
 snuba:
   api:
     replicas: 1
