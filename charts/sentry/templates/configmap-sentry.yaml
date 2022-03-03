@@ -4,15 +4,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: {{ template "sentry.fullname" . }}-sentry
-  annotations:
-    helm.sh/hook: pre-install,pre-upgrade
-    {{- if .Values.vault.vaultaddr }}
-    vault.security.banzaicloud.io/vault-addr: {{ .Values.vault.vaultAddr | quote }}
-    vault.security.banzaicloud.io/vault-role: {{ .Values.vault.vaultRole | quote }}
-    vault.security.banzaicloud.io/vault-path: {{ .Values.vault.vaultPath | quote }}
-    vault.security.banzaicloud.io/inline-mutation:  {{ .Values.vault.inlineMutation | quote }}
-    {{- end }}
+  name: {{ template "sentry.fullname" . }}-oficial-sentry
   labels:
     app: sentry
     chart: "{{ .Chart.Name }}-{{ .Chart.Version | replace "+" "_" }}"
@@ -40,14 +32,25 @@ data:
     ##########
     # Github #
     ##########
-    github-app.id: github-app.id: ${vault:secret/data/kubernetes/core/shared/main/sentry#github_appId}
-    github-app.name: ${vault:secret/data/kubernetes/core/shared/main/sentry#github_app_name}
+    {{- if .Values.github.appId }}
+    github-app.id: {{ .Values.github.appId }}
+    {{- end }}
+    {{- if .Values.github.appName }}
+    github-app.name: {{ .Values.github.appName | quote }}
+    {{- end }}
+    {{- if .Values.github.privateKey }}
     github-app.private-key: |-
-    ${vault:secret/data/kubernetes/core/shared/main/sentry#github_privateKey}
-    github-app.webhook-secret: ${vault:secret/data/kubernetes/core/shared/main/sentry#github_webhook_secret}
-    github-app.client-id: ${vault:secret/data/kubernetes/core/shared/main/sentry#github_clientId}
-    github-app.client-secret: ${vault:secret/data/kubernetes/core/shared/main/sentry#github_client_secret}
-
+{{ .Values.github.privateKey | indent 8 }}
+    {{- end }}
+    {{- if .Values.github.webhookSecret }}
+    github-app.webhook-secret: {{ .Values.github.webhookSecret | quote }}
+    {{- end }}
+    {{- if .Values.github.clientId }}
+    github-app.client-id: {{ .Values.github.clientId | quote }}
+    {{- end }}
+    {{- if .Values.github.clientSecret }}
+    github-app.client-secret: {{ .Values.github.clientSecret | quote }}
+    {{- end }}
 
     ##########
     # Google #
@@ -60,10 +63,11 @@ data:
     #########
     # Slack #
     #########
-    slack.client-id: ${vault:secret/data/kubernetes/core/shared/main/sentry#slack_clientId}
-    slack.client-secret: ${vault:secret/data/kubernetes/core/shared/main/sentry#slack_client_secret}
-    slack.signing-secret: ${vault:secret/data/kubernetes/core/shared/main/sentry#slack_signing_secret}
-
+    {{- if .Values.slack.clientId }}
+    slack.client-id: {{ .Values.slack.clientId | quote }}
+    slack.client-secret: {{ .Values.slack.clientSecret | quote }}
+    slack.signing-secret: {{ .Values.slack.signingSecret | quote }}
+    {{ end }}
 
     #########
     # Redis #

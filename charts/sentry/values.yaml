@@ -2,7 +2,7 @@ prefix:
 
 user:
   create: true
-  email: admin@sentry.local
+  email: elison.correa@iclinic.com.br
   password: aaaa
 
 # this is required on the first installation, as sentry has to be initialized first
@@ -107,7 +107,7 @@ sentry:
     vstsLimitedScopes: true
 
   worker:
-    replicas: 3
+    replicas: 2
     # concurrency: 4
     env: []
     resources: {}
@@ -210,12 +210,6 @@ sentry:
     days: 90
     sidecars: []
     volumes: []
-
-vault: {}
-#vaultAddr:
-#vaultRole:
-#vaultPath:
-#inlineMutation:
 
 snuba:
   api:
@@ -459,8 +453,8 @@ hooks:
 
 system:
   ## be sure to include the scheme on the url, for example: "https://sentry.example.com"
-  url: ""
-  adminEmail: ""
+  url: "https://sentry.iclinic.tools"
+  adminEmail: "elison.correa@iclinic.com.br"
   ## This should only be used if you’re installing Sentry behind your company’s firewall.
   public: false
   ## This will generate one for you (it's must be given upon updates)
@@ -715,7 +709,7 @@ externalClickhouse:
 # See https://github.com/bitnami/charts/tree/master/bitnami/kafka
 kafka:
   enabled: true
-  replicaCount: 3
+  replicaCount: 2
   allowPlaintextListener: true
   defaultReplicationFactor: 3
   offsetsTopicReplicationFactor: 3
@@ -780,9 +774,10 @@ postgresql:
   nameOverride: sentry-postgresql
   postgresqlUsername: postgres
   postgresqlDatabase: sentry
+  postgresqlPassword: "wUAviZJcNF"
   replication:
     enabled: false
-    readReplicas: 2
+    readReplicas: 1
     synchronousCommit: "on"
     numSynchronousReplicas: 1
     applicationName: sentry
@@ -802,7 +797,7 @@ externalPostgresql:
 
 rabbitmq:
   ## If disabled, Redis will be used instead as the broker.
-  enabled: true
+  enabled: false
   clustering:
     forceBoot: true
     rebalance: true
