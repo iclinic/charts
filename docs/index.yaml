@@ -3,7 +3,7 @@ entries:
   drone-autoscaler:
   - apiVersion: v2
     appVersion: 1.0.2
-    created: "2022-06-01T18:56:23.056882118-03:00"
+    created: "2022-06-01T19:07:56.464748604-03:00"
     description: A Helm chart for https://github.com/Shuttl-Tech/drone-autoscaler
     digest: 945d172e85bbf97c542a447ced3e2c452e958e4d8345ca838abba985c8b4a401
     maintainers:
@@ -16,12 +16,12 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/drone-autoscaler-0.1.0.tgz
+    - https://iclinic.github.io/charts/drone-autoscaler-0.1.0.tgz
     version: 0.1.0
   metabase:
   - apiVersion: v2
     appVersion: 0.38.3
-    created: "2022-06-01T18:56:23.058099667-03:00"
+    created: "2022-06-01T19:07:56.466140574-03:00"
     description: A Helm chart for https://github.com/metabase/metabase
     digest: 0a3f83ed8a7636a38307225841f682d317f22d2ae63bc1c38a44672ac9d3c705
     maintainers:
@@ -34,12 +34,12 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/metabase-0.1.0.tgz
+    - https://iclinic.github.io/charts/metabase-0.1.0.tgz
     version: 0.1.0
   outline:
   - apiVersion: v2
     appVersion: 0.63.0
-    created: "2022-06-01T18:56:23.07875116-03:00"
+    created: "2022-06-01T19:07:56.486044134-03:00"
     dependencies:
     - name: redis
       repository: https://charts.bitnami.com/bitnami
@@ -56,11 +56,11 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/outline-0.2.0.tgz
+    - https://iclinic.github.io/charts/outline-0.2.0.tgz
     version: 0.2.0
   - apiVersion: v2
     appVersion: 0.53.1
-    created: "2022-06-01T18:56:23.067840162-03:00"
+    created: "2022-06-01T19:07:56.476031884-03:00"
     dependencies:
     - name: redis
       repository: https://charts.bitnami.com/bitnami
@@ -77,12 +77,12 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/outline-0.1.0.tgz
+    - https://iclinic.github.io/charts/outline-0.1.0.tgz
     version: 0.1.0
   prefect-agent:
   - apiVersion: v2
     appVersion: 0.15.4
-    created: "2022-06-01T18:56:23.080303055-03:00"
+    created: "2022-06-01T19:07:56.487396611-03:00"
     description: A Helm chart for deploying a Prefect Agent
     digest: 9489040bee9de43cdf416a78c0cd93754f45c515a284585bc2eadfff5ffd18fb
     maintainers:
@@ -93,11 +93,11 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/prefect-agent-0.2.0.tgz
+    - https://iclinic.github.io/charts/prefect-agent-0.2.0.tgz
     version: 0.2.0
   - apiVersion: v2
     appVersion: 0.15.1
-    created: "2022-06-01T18:56:23.079539799-03:00"
+    created: "2022-06-01T19:07:56.486747902-03:00"
     description: A Helm chart for deploying a Prefect Agent
     digest: 94ee978cfa59c0db2972b5b7066e6499aa2866ec3dd2156fab2dd8655ce91caa
     maintainers:
@@ -108,12 +108,12 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/prefect-agent-0.1.0.tgz
+    - https://iclinic.github.io/charts/prefect-agent-0.1.0.tgz
     version: 0.1.0
   yace:
   - apiVersion: v2
     appVersion: v0.27.0-alpha
-    created: "2022-06-01T18:56:23.085547756-03:00"
+    created: "2022-06-01T19:07:56.494499543-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: cdc39c4c9edcb7c6879469d169788fd6007b4498737cd608f414dc360aeccd79
     maintainers:
@@ -126,11 +126,11 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/yace-0.3.0.tgz
+    - https://iclinic.github.io/charts/yace-0.3.0.tgz
     version: 0.3.0
   - apiVersion: v2
     appVersion: v0.27.0-alpha
-    created: "2022-06-01T18:56:23.08445975-03:00"
+    created: "2022-06-01T19:07:56.493367216-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: 640f8c28981e2172e46bffab850cbce75067458391c014736c407676bd24cdba
     maintainers:
@@ -143,11 +143,11 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/yace-0.2.2.tgz
+    - https://iclinic.github.io/charts/yace-0.2.2.tgz
     version: 0.2.2
   - apiVersion: v2
     appVersion: v0.27.0-alpha
-    created: "2022-06-01T18:56:23.083496411-03:00"
+    created: "2022-06-01T19:07:56.491713605-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: 1d62d973b329bacfe86b395e15ccb693733264d7ce8dbe3453be891f78286e9f
     maintainers:
@@ -160,11 +160,11 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/yace-0.2.1.tgz
+    - https://iclinic.github.io/charts/yace-0.2.1.tgz
     version: 0.2.1
   - apiVersion: v2
     appVersion: v0.27.0-alpha
-    created: "2022-06-01T18:56:23.082509592-03:00"
+    created: "2022-06-01T19:07:56.490179186-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: 677df46e46e70d9fab0166e04d6edc81849990288aab8218eeb9d1208790721f
     maintainers:
@@ -177,11 +177,11 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/yace-0.2.0.tgz
+    - https://iclinic.github.io/charts/yace-0.2.0.tgz
     version: 0.2.0
   - apiVersion: v2
     appVersion: 1.0.2
-    created: "2022-06-01T18:56:23.081422066-03:00"
+    created: "2022-06-01T19:07:56.488573864-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: 66a384ed76d9e8fbda5cdd100fc9e4db60d55e856ab461e507d167b114b6e56c
     maintainers:
@@ -194,6 +194,6 @@ entries:
     - https://github.com/iclinic/charts
     type: application
     urls:
-    - https://github.com/iclinic/charts/yace-0.1.0.tgz
+    - https://iclinic.github.io/charts/yace-0.1.0.tgz
     version: 0.1.0
-generated: "2022-06-01T18:56:23.055827535-03:00"
+generated: "2022-06-01T19:07:56.463718096-03:00"
