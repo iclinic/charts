@@ -3,7 +3,7 @@ entries:
   drone-autoscaler:
   - apiVersion: v2
     appVersion: 1.0.2
-    created: "2022-10-17T18:43:21.579996038-03:00"
+    created: "2023-04-06T15:36:54.43296929-03:00"
     description: A Helm chart for https://github.com/Shuttl-Tech/drone-autoscaler
     digest: 945d172e85bbf97c542a447ced3e2c452e958e4d8345ca838abba985c8b4a401
     maintainers:
@@ -21,7 +21,7 @@ entries:
   metabase:
   - apiVersion: v2
     appVersion: 0.38.3
-    created: "2022-10-17T18:43:21.5817696-03:00"
+    created: "2023-04-06T15:36:54.43400591-03:00"
     description: A Helm chart for https://github.com/metabase/metabase
     digest: 0a3f83ed8a7636a38307225841f682d317f22d2ae63bc1c38a44672ac9d3c705
     maintainers:
@@ -39,13 +39,34 @@ entries:
   outline:
   - apiVersion: v2
     appVersion: 0.63.0
-    created: "2022-10-17T18:43:21.602263047-03:00"
+    created: "2023-04-06T15:36:54.451556721-03:00"
     dependencies:
     - name: redis
       repository: https://charts.bitnami.com/bitnami
       version: ~12.8.3
     description: A Helm chart for https://github.com/outline/outline
-    digest: dd7e92f155ebd4b2dcb71b8c9175e4685c748c612a1fb2adf014e5f2a777903d
+    digest: 5f75abcb728e3e652aca8886349493b08e64be65345d53dc007aeeddfd7217e9
+    maintainers:
+    - email: gabriel.ricardo@iclinic.com.br
+      name: Gabriel Montañola
+    - email: marcio.godoy@iclinic.com.br
+      name: Marcio Rodrigues
+    name: outline
+    sources:
+    - https://github.com/iclinic/charts
+    type: application
+    urls:
+    - outline-0.2.1.tgz
+    version: 0.2.1
+  - apiVersion: v2
+    appVersion: 0.63.0
+    created: "2023-04-06T15:36:54.445272785-03:00"
+    dependencies:
+    - name: redis
+      repository: https://charts.bitnami.com/bitnami
+      version: ~12.8.3
+    description: A Helm chart for https://github.com/outline/outline
+    digest: b8b0f605ed9c6fc1f5c45efe1237475d39a1f0f5d6284102c43883321c5dea03
     maintainers:
     - email: gabriel.ricardo@iclinic.com.br
       name: Gabriel Montañola
@@ -60,7 +81,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 0.53.1
-    created: "2022-10-17T18:43:21.591089494-03:00"
+    created: "2023-04-06T15:36:54.440464916-03:00"
     dependencies:
     - name: redis
       repository: https://charts.bitnami.com/bitnami
@@ -82,7 +103,7 @@ entries:
   plantuml:
   - apiVersion: v2
     appVersion: 1.0.0
-    created: "2022-10-17T18:43:21.60336127-03:00"
+    created: "2023-04-06T15:36:54.452164704-03:00"
     description: A Helm chart for Kubernetes
     digest: 1ab61975b7c7664f8141ebf7b8807d1f01b507b957c321cc45a05e6f419ac478
     maintainers:
@@ -98,7 +119,7 @@ entries:
   prefect-agent:
   - apiVersion: v2
     appVersion: 0.15.4
-    created: "2022-10-17T18:43:21.604825829-03:00"
+    created: "2023-04-06T15:36:54.453061493-03:00"
     description: A Helm chart for deploying a Prefect Agent
     digest: 9489040bee9de43cdf416a78c0cd93754f45c515a284585bc2eadfff5ffd18fb
     maintainers:
@@ -113,7 +134,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 0.15.1
-    created: "2022-10-17T18:43:21.60411741-03:00"
+    created: "2023-04-06T15:36:54.452605373-03:00"
     description: A Helm chart for deploying a Prefect Agent
     digest: 94ee978cfa59c0db2972b5b7066e6499aa2866ec3dd2156fab2dd8655ce91caa
     maintainers:
@@ -128,7 +149,7 @@ entries:
     version: 0.1.0
   raw:
   - apiVersion: v2
-    created: "2022-10-17T18:43:21.605211556-03:00"
+    created: "2023-04-06T15:36:54.453302245-03:00"
     description: A place for all the Kubernetes resources which don't already have
       a home
     digest: 7cecc4834e4a7df4e38155959747d6984e49cf44e6ba57586efc414834a46d67
@@ -150,7 +171,24 @@ entries:
   yace:
   - apiVersion: v2
     appVersion: v0.27.0-alpha
-    created: "2022-10-17T18:43:21.610517981-03:00"
+    created: "2023-04-06T15:36:54.457133004-03:00"
+    description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
+    digest: 5d0d549747643a9f5d2453935dffa400e43b10535afa27460590bba4a3c3d854
+    maintainers:
+    - email: gabriel.ricardo@iclinic.com.br
+      name: Gabriel Montañola
+    - email: marcio.godoy@iclinic.com.br
+      name: Marcio Rodrigues
+    name: yace
+    sources:
+    - https://github.com/iclinic/charts
+    type: application
+    urls:
+    - yace-0.3.1.tgz
+    version: 0.3.1
+  - apiVersion: v2
+    appVersion: v0.27.0-alpha
+    created: "2023-04-06T15:36:54.456454297-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: cdc39c4c9edcb7c6879469d169788fd6007b4498737cd608f414dc360aeccd79
     maintainers:
@@ -167,7 +205,7 @@ entries:
     version: 0.3.0
   - apiVersion: v2
     appVersion: v0.27.0-alpha
-    created: "2022-10-17T18:43:21.609314474-03:00"
+    created: "2023-04-06T15:36:54.455774873-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: 640f8c28981e2172e46bffab850cbce75067458391c014736c407676bd24cdba
     maintainers:
@@ -184,7 +222,7 @@ entries:
     version: 0.2.2
   - apiVersion: v2
     appVersion: v0.27.0-alpha
-    created: "2022-10-17T18:43:21.608354042-03:00"
+    created: "2023-04-06T15:36:54.455166375-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: 1d62d973b329bacfe86b395e15ccb693733264d7ce8dbe3453be891f78286e9f
     maintainers:
@@ -201,7 +239,7 @@ entries:
     version: 0.2.1
   - apiVersion: v2
     appVersion: v0.27.0-alpha
-    created: "2022-10-17T18:43:21.607351684-03:00"
+    created: "2023-04-06T15:36:54.454554965-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: 677df46e46e70d9fab0166e04d6edc81849990288aab8218eeb9d1208790721f
     maintainers:
@@ -218,7 +256,7 @@ entries:
     version: 0.2.0
   - apiVersion: v2
     appVersion: 1.0.2
-    created: "2022-10-17T18:43:21.606342506-03:00"
+    created: "2023-04-06T15:36:54.453930795-03:00"
     description: A Helm chart for https://github.com/ivx/yet-another-cloudwatch-exporter
     digest: 66a384ed76d9e8fbda5cdd100fc9e4db60d55e856ab461e507d167b114b6e56c
     maintainers:
@@ -233,4 +271,4 @@ entries:
     urls:
     - yace-0.1.0.tgz
     version: 0.1.0
-generated: "2022-10-17T18:43:21.575974314-03:00"
+generated: "2023-04-06T15:36:54.42971485-03:00"
