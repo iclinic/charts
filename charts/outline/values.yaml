@@ -15,16 +15,8 @@ outline:
       allowedDomains:
         - example.com
         - example.net
-  aws:
-    s3:
-      acl: private
-      bucket: ""
-      endpoint: ""
-      maxSize: 26214400
-      region: ""
   containerPort: 3000
   debug: "sql,cache,presenters,events,logistics,emails,mailer"
-  externalUrl: "https://chart.example"
   forceHttps: false
   teamLogo: ""
 
@@ -32,7 +24,7 @@ serviceAccount:
   create: true
   name:
 #  annotations:
-#    
+#
 
 redis:
   usePassword: false

@@ -34,30 +34,6 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            - name: AWS_REGION
-              value: {{ .Values.outline.aws.s3.region | default "" | quote }}
-            - name: AWS_S3_ACL
-              value: {{ .Values.outline.aws.s3.acl | default "private" | quote }}
-            - name: AWS_S3_UPLOAD_BUCKET_NAME
-              value: {{ .Values.outline.aws.s3.bucket | default "" | quote }}
-            - name: AWS_S3_UPLOAD_BUCKET_URL
-              value: {{ .Values.outline.aws.s3.endpoint | default "" | quote }}
-            - name: AWS_S3_UPLOAD_MAX_SIZE
-              value: {{ .Values.outline.aws.s3.maxSize | default "" | quote }}
-            - name: DEBUG
-              value: {{ .Values.outline.debug | default "" | quote }}
-            - name: ENABLE_UPDATES
-              value: {{ .Values.outline.enableUpdates | default "false" | quote }}
-            - name: FORCE_HTTPS
-              value: {{ .Values.outline.forceHttps | default "false" | quote }}
-            - name: GOOGLE_ALLOWED_DOMAINS
-              value: {{ .Values.outline.auth.google.allowedDomains | join "," | quote }}
-            - name: PORT
-              value: {{ .Values.outline.containerPort | default 3000 | quote }}
-            - name: TEAM_LOGO
-              value: {{ .Values.outline.teamLogo | default "" | quote }}
-            - name: URL
-              value: {{ .Values.outline.externalUrl | required "Please set this release's external URL" | quote }}
             - name: REDIS_URL
               value: "redis://{{ include "outline.fullname" . }}-redis-master:6379"
           {{- with .Values.env }}
